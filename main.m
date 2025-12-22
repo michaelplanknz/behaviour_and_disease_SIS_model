@@ -103,17 +103,18 @@ for iCase = 1:nCases
     ylabel('q')
     % Add region labels
     if iCase == 1
-        text(0.5, 0.5, 'I')
-        text(1.4, 0.3, 'IIIa')
-        text(1.8, 0.7, 'IIIb')
-        text(2.2, 0.9, 'IIIc')
+        text(0.4, 0.5, 'NDFE')
+        text(1.3, 0.3, 'EE low B')
+        text(1.7, 0.7, 'EE+EE')
+        text(2.05, 0.9, 'EE high B')
     else
-        text(0.5 ,0.5, 'II')
-        text(1.2, 0.9, 'IVa')
-        text(2, 0.8, 'IVb')
-        text(1.35, 0.4, 'Va')
-        text(2, 0.2, 'Vb')
-        text(1.1, 0.15, 'VI')
+        text(0.2 ,0.5, 'NDFE+BDFE')
+        text(1.15, 0.9, 'EE+EE')
+        text(1.9, 0.7, 'EE high B')
+        text(1.16, 0.48, 'EE+BDFE')
+        text(1.9, 0.15, 'BDFE')
+        text(1.04, 0.15, 'EE+')
+        text(1.04, 0.1, 'BDFE')
     end
     title("\tau/\alpha = " + sprintf('%.1f', a) + ", \chi/\alpha = " + sprintf('%.1f', b) )
 
