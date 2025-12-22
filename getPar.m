@@ -3,12 +3,12 @@ function par = getPar(iCase)
 % Set ODe model parameters for each case
 
 par.Gamma = 0.2;
-par.Alpha = 0.1;              % 0.025 for slow, 0.1 for fast
+par.Alpha = 0.025;              % 0.025 for slow, 0.1 for fast
 par.Chi = 0.2 * par.Alpha;
 
 if iCase == 1
     par.Tau = 3.8 * par.Alpha;
-    par.Beta = 0.3;
+    par.Beta = 0.25;
     par.q = 0.7;
 elseif iCase == 2
     par.Tau = 3.8 * par.Alpha;

@@ -1,4 +1,4 @@
-function dydt = myODEs(t, y, par)
+function dydt = myODEs_suscept(t, y, par)
 
 % Functiopn to evaluate the ODEs for the behaviour-dependent susceptibily
 % version of the model
