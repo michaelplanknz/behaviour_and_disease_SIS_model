@@ -85,7 +85,7 @@ for iType = 1:2
         ylim([0 1])
         grid on
         xlabel('time (days)')
-        title(lbls(iCase) + " R_0 = " + sprintf('%.1f', par.Beta/par.Gamma) +  ", \tau = " + sprintf('%.1f', par.Tau) +  ", q = " + sprintf('%.1f\n', par.q) + desc(iCase))
+        title(lbls(iCase) + " R_0 = " + sprintf('%.1f', par.Beta/par.Gamma) +  ", \tau = " + sprintf('%.3f', par.Tau) +  ", q = " + sprintf('%.1f\n', par.q) + desc(iCase))
     
     end
     

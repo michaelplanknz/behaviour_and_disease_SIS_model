@@ -40,3 +40,6 @@ else
     par.q = 0.3;
 end
 
+% par.Beta = 10*par.Beta;
+% par.Gamma = 10*par.Gamma;
+
