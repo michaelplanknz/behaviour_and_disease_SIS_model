@@ -17,35 +17,55 @@ S0 = 0.95;
 % Time range        1000 for slow, 300 for fast
 tSpan = 0:1000;
 
+% Spacing for vector field arrow length plotting
+dx = 0.1;
+
+% Power for vector field arrow length plotting
+pQuiv = 0.5;      
+
 % Set ICs
 IC1 = [(1-B01)*S0; B01*S0; B01 ];
 IC2 = [(1-B02)*S0; B02*S0; B02 ];
 
 
+h = figure(1);
+h.Position = [ 89   126   931   864];
+tiledlayout(3, 3, "TileSpacing", "compact");
 
-% Do the same thing for the susceptibility and transmission versions of the
-% model
-for iType = 1:2
+h = figure(2);
+h.Position = [     164   409   931   562];
+tiledlayout(2, 3, "TileSpacing", "compact");
+
+h = figure(3);
+h.Position = [  300   126   931   864];
+tiledlayout(3, 3, "TileSpacing", "compact");
+
+% For each parameter combo, specify the figure and tile to put the results
+% in
+figNum = [ones(1, 3), 2*ones(1, 2), 3*ones(1, 3)];
+tileNum = [1, 4, 7, 1, 4, 1, 4, 7];
+
+
+desc = ["EE low B", "bistable EEs", "EE high B", "bistable EEs", "EE high B", "bistable EE/BDFE", "bistable EE/BDFE", "BDFE" ];
     
-    h = figure(iType);
-    h.Position = [   564          64        1165         934];
-    tiledlayout(3, 3, "TileSpacing", "compact");
-    
-    % Tiles to plot cases 1-98 in and description of dynamics
-    iPlot = [1, 2, 3, 4, 5, 7, 8, 9];
-    desc = ["EE low B", "bistable EEs", "EE high B", "bistable EEs", "EE high B", "bistable EE/BDFE", "bistable EE/BDFE", "BDFE" ];
-    
-    lbls = ["(a)", "(b)", "(c)", "(d)", "(e)", "(f)", "(g)", "(h)", "(i)"];
-    
-    % Run and plot each parameter combination in turn
-    for iCase = 1:nCases
-        par = getPar(iCase);
-    
+lbls = ["(a)", "(b)", "(c)", "(d)", "(e)", "(f)", "(g)", "(h)", "(i)", "(j)", "(k)", "(l)", "(m)", "(n)", "(o)" ];
+
+% Run and plot each parameter combination in turn
+for iCase = 1:nCases
+    par = getPar(iCase);
+
+    h = figure(figNum(iCase));
+
+
+
+    % Do the same thing for the susceptibility and transmission versions of the
+    % model
+    for iType = 1:2
         % Select which ODE model to run
         if iType == 1
-            ODE_handle = @(t, y)myODEs_suscept(t, y, par);
-        else
             ODE_handle = @(t, y)myODEs_trans(t, y, par);
+        else
+            ODE_handle = @(t, y)myODEs_suscept(t, y, par);
         end        
         
         % Run the two initial conditions
@@ -63,47 +83,89 @@ for iType = 1:2
         B2 = Y2(:, 3);
         S2 = SN2+SB2;
     
-        % Plot
-        nexttile(iPlot(iCase));
-        plot(t1, S1)
+
+        % Plot phase plane (for trans-modulated model only)
+        if iType == 1
+
+            % Evaluate vector field over a grid
+            sx = 0:dx:1;
+            by = 0:dx:1;
+            nx = length(sx);
+            ny = length(by);
+            U = zeros(ny, nx);
+            V = zeros(ny, nx);
+            for ix = 1:nx
+                for jy = 1:ny
+                    y = [sx(ix); by(jy)];
+                    dydt = myODEs_2D(0, y, par);
+                    U(jy, ix) = dydt(1);
+                    V(jy, ix) = dydt(2);
+                end
+            end
+            % Plot arrows with a power p of their real length so long
+            % vectors don't dominate too much
+            Z = sqrt(U.^2+V.^2);
+            U = U.*Z.^(pQuiv-1);
+            V = V.*Z.^(pQuiv-1);
+
+            iTile = tileNum(iCase);
+            nexttile(iTile);
+            quiver(sx, by, U, V, 'Color', [0.2 0.7 0.2]);
+            hold on
+            ha = gca;
+            ha.ColorOrderIndex = 1;
+            plot(S1, B1)
+            ha.ColorOrderIndex = 1;
+            plot(S2, B2)
+
+            xlim([0 1])
+            ylim([0 1])
+            xlabel('S')
+            ylabel('B')
+            title("R_0 = " + sprintf('%.2f', par.Beta/par.Gamma) + ", " + desc(iCase) + newline + lbls(iTile))
+        end
+
+
+        % Plot time series
+        iTile = tileNum(iCase) + iType; 
+        nexttile(iTile);
+        plot(t1, 1-S1)
         hold on
         plot(t1, B1)
-        if iType == 1
+        if iType == 2
             % Only need to plot S_B/S for the susceptibility model as it is
             % identical to B in the transmission model
             plot(t1, SB1./S1)
         end
         ha = gca;
         ha.ColorOrderIndex = 1;
-        plot(t2, S2, '--')
+        plot(t2, 1-S2, '--')
         plot(t2, B2, '--')
-        if iType == 1
+        if iType == 2
             % Only need to plot S_B/S for the susceptibility model as it is
             % identical to B in the transmission model
             plot(t2, SB2./S2, '--')
         end
+        % Plot equilibrium without behaviour I = 1-1/R0
+        yline(1-par.Gamma/par.Beta, 'k:');
         ylim([0 1])
-        grid on
         xlabel('time (days)')
-        title(lbls(iCase) + " R_0 = " + sprintf('%.1f', par.Beta/par.Gamma) +  ", \tau = " + sprintf('%.3f', par.Tau) +  ", q = " + sprintf('%.1f\n', par.q) + desc(iCase))
-    
+        title(lbls(iTile))
     end
-    
-    
-    if iType == 1   
-        l = legend('S', 'B', 'S_B/S');
-    else
-        l = legend('S', 'B');
-    end
-    l.Layout.Tile = 6;
-    
-    if iType == 1
-        sgtitle('Behaviour-dependent susceptibility')
-        fName = figFolder + "time_series_diff_susceptibility.png";
-    else
-        sgtitle('Behaviour-dependent transmission')
-        fName = figFolder + "time_series_diff_transmission.png";
-    end
-    saveas(h, fName);
 
+
+
+     if ismember(iCase, [1 4 6])
+        sgtitle("\tau/\alpha = " + sprintf('%.1f', par.Tau/par.Alpha) + ", q = " +sprintf('%.1f', par.q) );
+        nexttile(2);  
+        lgd = legend('I', 'B', 'Location', 'northeast');
+        nexttile(3);
+        lgd = legend('I', 'B', 'S_B/S', 'Location', 'northeast');
+    end
+end
+
+for iFig = 1:3
+    h = figure(iFig);
+    fName = figFolder + "fig_cases" + iFig + ".png";
+    saveas(h, fName);
 end

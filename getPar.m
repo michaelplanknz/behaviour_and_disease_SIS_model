@@ -12,7 +12,8 @@ if iCase == 1
     par.q = 0.7;
 elseif iCase == 2
     par.Tau = 3.8 * par.Alpha;
-    par.Beta = 0.42;
+    %par.Beta = 0.42;
+    par.Beta = 0.35;
     par.q = 0.7;
 elseif iCase == 3
     par.Tau = 3.8 * par.Alpha;
@@ -28,15 +29,18 @@ elseif iCase == 5
     par.q = 0.7;
 elseif iCase == 6
     par.Tau = 5 * par.Alpha;
-    par.Beta = 0.24;
+    %par.Beta = 0.24;
+    par.Beta = 0.23;
     par.q = 0.3;
 elseif iCase == 7
     par.Tau = 5 * par.Alpha;
-    par.Beta = 0.3;
+    %par.Beta = 0.3;
+    par.Beta = 0.28;
     par.q = 0.3;
 else
     par.Tau = 5 * par.Alpha;
-    par.Beta = 0.4;
+    %par.Beta = 0.4;
+    par.Beta = 0.36;
     par.q = 0.3;
 end
 

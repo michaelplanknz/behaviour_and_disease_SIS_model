@@ -14,8 +14,12 @@ b = 0.2;
 % Range of R0 to plot
 R0 = 0.5:0.01:2.5;
 
-
+% Number of values of tau/alpha being plotted
 nCases = length(a_vec);
+
+% Number of parameter combinations to add as points for each case
+nPoints = [3, 5];
+
 
 cols = hsv(5);
 h = figure(1);
@@ -24,6 +28,15 @@ tiledlayout(1, nCases, "TileSpacing", "compact");
 
 for iCase = 1:nCases
     a = a_vec(iCase);
+
+    % Calculate parameter points to be plotted
+    firstPoint = [1, 1+cumsum(nPoints(1:end-1))];
+    [R0point, qpoint] = deal(zeros(1, nPoints(iCase)));
+    for iPoint = 1:nPoints(iCase)
+        par = getPar(firstPoint(iCase) + iPoint-1 );
+        R0point(iPoint) = par.Beta/par.Gamma;
+        qpoint(iPoint) = par.q;
+    end
     
     % BDFEs
     Bstar = 0.5 * (1 + [1, -1]*sqrt(1-4/a));
@@ -95,22 +108,28 @@ for iCase = 1:nCases
     end
     % Plot SNB2
     plot(RSNB2, qv, 'color', cols(4, :), 'LineWidth', 2, 'LineStyle', '--')
+    % Plot parameter point
+    plot(R0point, qpoint, 'o', 'color', 'k')
     % Plot the transcritical bifurcation of DFE and EE
     xline(1, 'k-', 'LineWidth', 2)
     xlim([0, max(R0)])
     ylim([0 1])
     xlabel('R_0')
     ylabel('q')
+
+
+
+
     % Add region labels
     if iCase == 1
         text(0.4, 0.5, 'NDFE')
         text(1.3, 0.3, 'EE low B')
-        text(1.7, 0.7, 'EE+EE')
+        text(1.65, 0.8, 'EE+EE')
         text(2.05, 0.9, 'EE high B')
     else
         text(0.2 ,0.5, 'NDFE+BDFE')
         text(1.15, 0.9, 'EE+EE')
-        text(1.9, 0.7, 'EE high B')
+        text(1.9, 0.6, 'EE high B')
         text(1.16, 0.48, 'EE+BDFE')
         text(1.9, 0.15, 'BDFE')
         text(1.04, 0.15, 'EE+')
