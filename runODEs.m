@@ -90,18 +90,9 @@ for iCase = 1:nCases
             % Evaluate vector field over a grid
             sx = 0:dx:1;
             by = 0:dx:1;
-            nx = length(sx);
-            ny = length(by);
-            U = zeros(ny, nx);
-            V = zeros(ny, nx);
-            for ix = 1:nx
-                for jy = 1:ny
-                    y = [sx(ix); by(jy)];
-                    dydt = myODEs_2D(0, y, par);
-                    U(jy, ix) = dydt(1);
-                    V(jy, ix) = dydt(2);
-                end
-            end
+            [SX, BY] = meshgrid(sx, by);
+            [U, V] = myVectorField(SX, BY, par);
+
             % Plot arrows with a power p of their real length so long
             % vectors don't dominate too much
             Z = sqrt(U.^2+V.^2);
@@ -110,7 +101,7 @@ for iCase = 1:nCases
 
             iTile = tileNum(iCase);
             nexttile(iTile);
-            quiver(sx, by, U, V, 'Color', [0.2 0.7 0.2]);
+            quiver(sx, by, U, V, 'Color', 0.8*[1 1 1]);
             hold on
             ha = gca;
             ha.ColorOrderIndex = 1;

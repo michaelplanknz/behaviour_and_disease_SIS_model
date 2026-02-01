@@ -22,6 +22,8 @@ nPoints = [3, 5];
 
 
 cols = hsv(5);
+lbls = ["(a)", "(b)"];
+
 h = figure(1);
 h.Position = [      680         578        1035         420];
 tiledlayout(1, nCases, "TileSpacing", "compact");
@@ -98,20 +100,22 @@ for iCase = 1:nCases
     
     nexttile;
     hold on
+    % Plot the transcritical bifurcation of DFE and EE
+    xline(1, 'k-', 'LineWidth', 2, 'DisplayName', 'TC0')
     if a > 4
-        % If a > 4 plot the transcritical bifurcations of BDFE and EE  
-        plot(R0(ind), qplus(ind), 'color', cols(1, :), 'LineWidth', 2)
-        plot(R0(ind), qminus(ind), 'color', cols(2, :), 'LineWidth', 2)
+        % If a > 4 plot the transcritical bifurcations of BDFE and EE (and an empty SNB1 curve for the legend) 
+        plot(R0(ind), qminus(ind), 'color', cols(2, :), 'LineWidth', 2, 'DisplayName', 'TC1')
+        plot(R0(ind), qplus(ind), 'color', cols(1, :), 'LineWidth', 2, 'DisplayName', 'TC2')
+        plot(nan, nan, 'color', cols(3, :), 'LineWidth', 2, 'LineStyle', '--', 'DisplayName', 'SNB1')
+        lgd = legend('Location', 'eastoutside');
     else
         % Otherwise plot SNB1
-        plot(RSNB1, qv, 'color', cols(3, :), 'LineWidth', 2, 'LineStyle', '--')
+        plot(RSNB1, qv, 'color', cols(3, :), 'LineWidth', 2, 'LineStyle', '--', 'DisplayName', 'SNB1')
     end
     % Plot SNB2
-    plot(RSNB2, qv, 'color', cols(4, :), 'LineWidth', 2, 'LineStyle', '--')
+    plot(RSNB2, qv, 'color', cols(4, :), 'LineWidth', 2, 'LineStyle', '--', 'DisplayName', 'SNB2')
     % Plot parameter point
-    plot(R0point, qpoint, 'o', 'color', 'k')
-    % Plot the transcritical bifurcation of DFE and EE
-    xline(1, 'k-', 'LineWidth', 2)
+    plot(R0point, qpoint, 'o', 'color', 'k', 'HandleVisibility', 'off')
     xlim([0, max(R0)])
     ylim([0 1])
     xlabel('R_0')
@@ -122,20 +126,35 @@ for iCase = 1:nCases
 
     % Add region labels
     if iCase == 1
-        text(0.4, 0.5, 'NDFE')
-        text(1.3, 0.3, 'EE low B')
-        text(1.65, 0.8, 'EE+EE')
-        text(2.05, 0.9, 'EE high B')
+        % Region 1
+        text(0.35, 0.5, '1. NDFE')
+        % Region 2
+        text(1.1, 0.5, '2. EE low B')
+        % Region 3
+        text(1.55, 0.8, '3. EE+EE')
+        % Region 4
+        text(2.1, 0.9, '4. EE')
+        text(2.15, 0.85, 'high B')
     else
-        text(0.2 ,0.5, 'NDFE+BDFE')
-        text(1.15, 0.9, 'EE+EE')
-        text(1.9, 0.6, 'EE high B')
-        text(1.16, 0.48, 'EE+BDFE')
-        text(1.9, 0.15, 'BDFE')
-        text(1.04, 0.15, 'EE+')
-        text(1.04, 0.1, 'BDFE')
+        % Region 5
+        text(0.2 ,0.5, '5. NDFE+BDFE')
+        % Region 6
+        text(1.03, 0.15, '6. EE+')
+        text(1.05, 0.1, 'BDFE')
+        % Region 7
+        text(1.2, 0.48, '7. EE+')
+        text(1.25, 0.43, 'BDFE')
+        % Region 8
+        text(1.9, 0.15, '8. BDFE')
+        % Region 9
+        text(1.15, 0.9, '9. EE+')
+        text(1.2, 0.85, 'EE')
+        % Region 10
+        text(1.8, 0.9, '10. EE high B')
+
+
     end
-    title("\tau/\alpha = " + sprintf('%.1f', a) + ", \chi/\alpha = " + sprintf('%.1f', b) )
+    title(lbls(iCase) + " \tau/\alpha = " + sprintf('%.1f', a))
 
 end
 
