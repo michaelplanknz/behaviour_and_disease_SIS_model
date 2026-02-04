@@ -6,8 +6,8 @@ Code for the behaviour and disease SIS model with complex social contagion
 
 ## How to use this repo
 
-* Run main.m to create the two-parameter bifurcation diagrams for the behaviour-dependent transmission version of the model.
-* Run runODEs.m to create the time series plots for the behaviour-dependent susceptibility and the behaviour-dependent transmission versions of the model.
+* Run bifurcation_plot.m to create the two-parameter bifurcation diagrams for the behaviour-dependent transmission version of the model (Figure 1).
+* Run main.m to create the phase plane and time series plots for the transmission-modulated and behaviour-modulated versionfs of the model (Figures 2-4).
 
 
 Figures will be saved in the `figures/` folder.
