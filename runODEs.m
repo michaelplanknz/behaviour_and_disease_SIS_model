@@ -19,13 +19,19 @@ S0 = 0.95;
 % Time range        1000 for slow, 300 for fast
 tSpan = 0:1000;
 
+% Time span and perturbation size for finding stable/unstable manifolds
+tManifold = [0, 1e4];
+pert = 1e-4;
+opts = optimoptions('fsolve', 'FunctionTolerance', 1e-10, 'StepTolerance', 1e-10, 'Display' ,'off', 'Algorithm', 'levenberg-marquardt');
+
 % Spacing for nullcline plotting (dx) and vector field arrow length plotting (dxquiv and dyquiv)
-dx = 0.01;
+dx = 0.001;
 dxquiv = 0.05;
 dyquiv = 0.1;
 
 
-% Power for vector field arrow length plotting
+% Power for vector field arrow length plotting (1 for actual length, 0 for
+% all the same length)
 pQuiv = 0.5;      
 
 % Set ICs
@@ -56,6 +62,8 @@ tileNum = [1, 4, 7, 1, 4, 1, 4, 7];
 desc = ["EE low B", "bistable EEs", "EE high B", "bistable EEs", "EE high B", "bistable EE/BDFE", "bistable EE/BDFE", "BDFE" ];
     
 lbls = ["(a)", "(b)", "(c)", "(d)", "(e)", "(f)", "(g)", "(h)", "(i)", "(j)", "(k)", "(l)", "(m)", "(n)", "(o)" ];
+greyCol =  0.8*[1 1 1];
+SSSmarksize = 22;
 
 % Run and plot each parameter combination in turn
 for iCase = 1:nCases
@@ -147,62 +155,96 @@ for iCase = 1:nCases
                     if leftFlag ~= leftFlagPrev
                         % Crossing detected - append initial condition to
                         % xr0
-                        xr0 = [xr0, [Snull1(ix); Bnull1(ix)] ];
+                        xr0 = [xr0, [0.5*(Snull1(ix-1)+Snull1(ix)); 0.5*(Bnull1(ix-1)+Bnull1(ix))] ];
                     end
                 end
             end
             nICs = min(3, size(xr0, 2));
             EE = nan(2, 3);
             for iIC = 1:nICs
-                EE(:, iIC) = fsolve(@(x)mySteadyState(x, par), xr0(:, iIC) );
+                EE(:, iIC) = fsolve(@(x)my2Dsystem(0, x, par), xr0(:, iIC), opts );
+                % Jacobian analysis for the saddle EE (which is always the
+                % 2nd one)
+                if iIC == 2
+                    % Get Jacobian and calculate its eigenvalues and
+                    % eigenvectors
+                    J = getJacobian(EE(:, iIC), par);
+                    [eV, eD] = eig(J);
+                    eD = diag(eD);
+                    iStable = find(real(eD) < 0);
+                    iUnstable = find(real(eD) > 0);
+                    eigStable = eV(:, iStable);
+                    eigUnstable = eV(:, iUnstable);
+
+                    % Solve for stable manifrold (run backwards in time)
+                    ICstable1 = EE(:, iIC) + pert*eigStable;
+                    ICstable2 = EE(:, iIC) - pert*eigStable;
+                    [~, Ystable1] = ode45(@(t, y)(-my2Dsystem(t, y, par)), tManifold, ICstable1);
+                    [~, Ystable2] = ode45(@(t, y)(-my2Dsystem(t, y, par)), tManifold, ICstable2);                    
+                    % Solve for unstable manifrold (run forwards in time)
+                    ICunstable1 = EE(:, iIC) + pert*eigUnstable;
+                    ICunstable2 = EE(:, iIC) - pert*eigUnstable;
+                    [~, Yunstable1] = ode45(@(t, y)(my2Dsystem(t, y, par)), tManifold, ICunstable1);
+                    [~, Yunstable2] = ode45(@(t, y)(my2Dsystem(t, y, par)), tManifold, ICunstable2);
+                end
             end
 
 
             % Plot vector field
             iTile = tileNum(iCase);
             nexttile(iTile);
-            quiver(sx, by, U, V, 'Color', 0.8*[1 1 1]);
+            quiver(sx, by, U, V, 'Color', greyCol, 'HandleVisibility', 'off');
             hold on
 
             ha = gca;
 
             % Plot S nullcline
-            ha.ColorOrderIndex = 2;
-            plot(Snull1, Bnull1, 'LineWidth', 2)
-            ha.ColorOrderIndex = 2;
-            plot([1 1], [0 1], 'LineWidth', 2)
+            ha.ColorOrderIndex = 4;
+            plot(Snull1, Bnull1, '--', 'LineWidth', 2, 'HandleVisibility', 'off')
+            ha.ColorOrderIndex = 4;
+            plot([1 1], [0 1], '--', 'LineWidth', 2, 'HandleVisibility', 'off')
 
             % Plot B nullcline
-            plot(Snull2, Bnull2, 'LineWidth', 2)
-            ha.ColorOrderIndex = 3;
+            plot(Snull2, Bnull2, '--', 'LineWidth', 2, 'HandleVisibility', 'off')
+            ha.ColorOrderIndex = 5;
 
             % Plot equilibria
             % Plot NDFE
-            plot(1, 0, 'bo')
+            plot(1, 0, 'ko', 'HandleVisibility', 'off')
             % Plot BDFEs (if real)
             if isreal(Bstar(1))
                 if ismember(iCase, [6, 7, 8])
-                    plot(1, Bstar(1), 'b.', 'MarkerSize', 25)
+                    plot(1, Bstar(1), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')
                 else
-                    plot(1, Bstar(1), 'bo')
+                    plot(1, Bstar(1), 'ko', 'HandleVisibility', 'off')
                 end
-                plot(1, Bstar(2), 'bo')
+                plot(1, Bstar(2), 'ko', 'HandleVisibility', 'off')
             end
             % Plot endemic equilibria
-            plot(EE(1, 1), EE(2, 1), 'b.', 'MarkerSize', 25)            
-            plot(EE(1, 2), EE(2, 2), 'bo')            
-            plot(EE(1, 3), EE(2, 3), 'b.', 'MarkerSize', 25)            
+            plot(EE(1, 1), EE(2, 1), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')            
+            plot(EE(1, 2), EE(2, 2), 'ko', 'HandleVisibility', 'off')            
+            plot(EE(1, 3), EE(2, 3), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')            
 
+            % Plot stable/unstable manifolds (if the saddle EE exists)
+            if iIC > 1
+                ha.ColorOrderIndex = 6;
+                plot(Ystable1(:, 1), Ystable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+                ha.ColorOrderIndex = 6;
+                plot(Ystable2(:, 1), Ystable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+                plot(Yunstable1(:, 1), Yunstable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+                ha.ColorOrderIndex = 7;
+                plot(Yunstable2(:, 1), Yunstable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+            end
 
             % Plot trajectories from the two initial conditions
-            ha.ColorOrderIndex = 1;
-            plot(S1, B1, 'LineWidth', 1.5)
-            ha.ColorOrderIndex = 1;
-            plot(S2, B2, 'LineWidth', 1.5)
-            ha.ColorOrderIndex = 1;
-            plot(S3, B3, 'LineWidth', 1.5)
-            ha.ColorOrderIndex = 1;
-            plot(S4, B4, 'LineWidth', 1.5)
+            %ha.ColorOrderIndex = 1;
+            plot(S1, B1, 'k-', 'LineWidth', 1.5, 'HandleVisibility', 'off')
+            %ha.ColorOrderIndex = 1;
+            plot(S2, B2, 'k-', 'LineWidth', 1.5, 'HandleVisibility', 'off')
+            %ha.ColorOrderIndex = 1;
+            plot(S3, B3, 'k-', 'LineWidth', 1.5, 'HandleVisibility', 'off')
+            %ha.ColorOrderIndex = 1;
+            plot(S4, B4, 'k-', 'LineWidth', 1.5, 'HandleVisibility', 'off')
 
             xlim([0.4 1])
             ylim([0 1])
@@ -215,22 +257,22 @@ for iCase = 1:nCases
         % Plot time series
         iTile = tileNum(iCase) + iType; 
         nexttile(iTile);
-        plot(t1, 1-S1)
+        plot(t1, 1-S1, 'LineWidth', 1.5)
         hold on
-        plot(t1, B1)
+        plot(t1, B1, 'LineWidth', 1.5)
         if iType == 2
             % Only need to plot S_B/S for the susceptibility model as it is
             % identical to B in the transmission model
-            plot(t1, SB1./S1)
+            plot(t1, SB1./S1, 'LineWidth', 1.5)
         end
         ha = gca;
         ha.ColorOrderIndex = 1;
-        plot(t2, 1-S2, '--')
-        plot(t2, B2, '--')
+        plot(t2, 1-S2, '--', 'LineWidth', 1.5)
+        plot(t2, B2, '--', 'LineWidth', 1.5)
         if iType == 2
             % Only need to plot S_B/S for the susceptibility model as it is
             % identical to B in the transmission model
-            plot(t2, SB2./S2, '--')
+            plot(t2, SB2./S2, '--', 'LineWidth', 1.5)
         end
         % Plot equilibrium without behaviour I = 1-1/R0
         yline(1-1/R0, 'k:');
@@ -247,11 +289,24 @@ for iCase = 1:nCases
         lgd = legend('I', 'B', 'Location', 'northeast');
         nexttile(3);
         lgd = legend('I', 'B', 'S_B/S', 'Location', 'northeast');
-    end
+     end
 end
 
 for iFig = 1:3
     h = figure(iFig);
+    nexttile(1);
+    ha = gca;
+    quiver(0, 0, 0, 0, 'color', greyCol, 'DisplayName', 'vec. field')
+    ha.ColorOrderIndex = 4;
+    plot(nan, nan, '--', 'LineWidth', 2, 'DisplayName', 'S null')
+    plot(nan, nan, '--', 'LineWidth', 2, 'DisplayName', 'B null')
+    plot(nan, nan, '-', 'LineWidth', 2, 'DisplayName', 'stable mnfld')
+    plot(nan, nan, '-', 'LineWidth', 2, 'DisplayName', 'unstable mnfld')
+    plot(nan, nan, 'k-', 'LineWidth', 1.5, 'DisplayName', 'trajectory')
+    plot(nan, nan, 'k.', 'MarkerSize', SSSmarksize, 'DisplayName', 'stable eq.')
+    plot(nan, nan, 'ko', 'DisplayName', 'unstable eq.')
+    lgd = legend('Location', 'westoutside');
+
     fName = figFolder + "fig_cases" + iFig + ".png";
     saveas(h, fName);
 end
