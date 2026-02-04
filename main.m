@@ -31,7 +31,7 @@ tiledlayout(1, nCases, "TileSpacing", "compact");
 for iCase = 1:nCases
     a = a_vec(iCase);
 
-    % Calculate parameter points to be plotted
+    % Get (R0,q) parameter points to be plotted
     firstPoint = [1, 1+cumsum(nPoints(1:end-1))];
     [R0point, qpoint] = deal(zeros(1, nPoints(iCase)));
     for iPoint = 1:nPoints(iCase)
