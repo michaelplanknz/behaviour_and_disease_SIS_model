@@ -89,125 +89,56 @@ for iCase = 1:nCases
         % Plot phase plane (for trans-modulated model only)
         if iType == 1
 
-            % Evaluate vector field over a grid
-            sx = 0:dxquiv:1;
-            by = 0:dyquiv:1;
-            [SX, BY] = meshgrid(sx, by);
-            [U, V] = myVectorField(SX, BY, par);
-
-            % Scale arrows with a power p of their initial length so long
-            % vectors don't dominate too much
-            Z = sqrt(U.^2+V.^2);
-            U = U.*Z.^(pQuiv-1);
-            V = V.*Z.^(pQuiv-1);
-
-            % Get (B,S) coords for the S nullcline
-            Snull1 = 0:dx:1;
-            Bnull1 = 1/(1-par.q) * (1 - 1./(R0*Snull1));
-
-            % Get (B,S) coords for the B nullcline
-            Bnull2 = 0:dx:1;
-            Snull2 = 1 + (par.Tau*Bnull2.^2 - par.Alpha*Bnull2./(1-Bnull2))/par.Chi;
-            
-            % Get coords for BDFE
-            Bstar = 0.5 * (1 + [1, -1]*sqrt(1-4*par.Alpha/par.Tau));
-
-            % Find endemic equilibria
-            % First get good initial conditions for root-solving by moving along
-            % the S nullcline and seeing where it crosses the B hullcline
-            nx = length(Snull1);
-            xr0 = [];
-            leftFlag = 1;
-            for ix = 1:nx
-                % Only consider values in [0, 1]
-                if Bnull1(ix) >= 0 & Bnull1(ix) <= 1
-                    leftFlagPrev = leftFlag;
-                    % Compute flag variable indicating whether the current
-                    % point on the S nullclnie is left of the B nullcline
-        	        leftFlag = Snull1(ix) < interp1(Bnull2, Snull2, Bnull1(ix));
-                    if leftFlag ~= leftFlagPrev
-                        % Crossing detected - append initial condition to
-                        % xr0
-                        xr0 = [xr0, [0.5*(Snull1(ix-1)+Snull1(ix)); 0.5*(Bnull1(ix-1)+Bnull1(ix))] ];
-                    end
-                end
-            end
-            % Number of EEs to look for:
-            nEqs = min(3, size(xr0, 2));
-            EE = nan(2, 3);
-            for iEq = 1:nEqs
-                EE(:, iEq) = fsolve(@(x)my2Dsystem(0, x, par), xr0(:, iEq), opts );
-                % Jacobian analysis for the saddle EE (which is always the
-                % 2nd one)
-                if iEq == 2
-                    % Get Jacobian and calculate its eigenvalues and
-                    % eigenvectors
-                    J = getJacobian(EE(:, iEq), par);
-                    [eV, eD] = eig(J);
-                    eD = diag(eD);
-                    iStable = find(real(eD) < 0);
-                    iUnstable = find(real(eD) > 0);
-                    eigStable = eV(:, iStable);
-                    eigUnstable = eV(:, iUnstable);
-
-                    % Solve for stable manifrold (run backwards in time)
-                    ICstable1 = EE(:, iEq) + pert*eigStable;
-                    ICstable2 = EE(:, iEq) - pert*eigStable;
-                    [~, Ystable1] = ode45(@(t, y)(-my2Dsystem(t, y, par)), tManifold, ICstable1);
-                    [~, Ystable2] = ode45(@(t, y)(-my2Dsystem(t, y, par)), tManifold, ICstable2);                    
-                    % Solve for unstable manifrold (run forwards in time)
-                    ICunstable1 = EE(:, iEq) + pert*eigUnstable;
-                    ICunstable2 = EE(:, iEq) - pert*eigUnstable;
-                    [~, Yunstable1] = ode45(@(t, y)(my2Dsystem(t, y, par)), tManifold, ICunstable1);
-                    [~, Yunstable2] = ode45(@(t, y)(my2Dsystem(t, y, par)), tManifold, ICunstable2);
-                end
-            end
-
+            results = getPhasePlotOutputs(par, dx, dxquiv, dyquiv, pQuiv, tManifold, pert, opts);
 
             % Plot vector field
             iTile = tileNum(iCase);
             nexttile(iTile);
-            quiver(sx, by, U, V, 'Color', greyCol, 'HandleVisibility', 'off');
+            quiver(results.sx, results.by, results.U, results.V, 'Color', greyCol, 'HandleVisibility', 'off');
             hold on
 
             ha = gca;
 
             % Plot S nullcline
             ha.ColorOrderIndex = 4;
-            plot(Snull1, Bnull1, '--', 'LineWidth', 2, 'HandleVisibility', 'off')
+            plot(results.Snull1, results.Bnull1, '--', 'LineWidth', 2, 'HandleVisibility', 'off')
+            % Plot the other branch of the S nullcline which is the line S=1
             ha.ColorOrderIndex = 4;
             plot([1 1], [0 1], '--', 'LineWidth', 2, 'HandleVisibility', 'off')
 
             % Plot B nullcline
-            plot(Snull2, Bnull2, '--', 'LineWidth', 2, 'HandleVisibility', 'off')
+            plot(results.Snull2, results.Bnull2, '--', 'LineWidth', 2, 'HandleVisibility', 'off')
             ha.ColorOrderIndex = 5;
 
             % Plot equilibria
             % Plot NDFE
             plot(1, 0, 'ko', 'HandleVisibility', 'off')
             % Plot BDFEs (if real)
-            if isreal(Bstar(1))
+            if isreal(results.Bstar(1))
                 if ismember(iCase, [6, 7, 8])
-                    plot(1, Bstar(1), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')
+                    % BDFE+ is stable in these cases
+                    plot(1, results.Bstar(1), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')
                 else
-                    plot(1, Bstar(1), 'ko', 'HandleVisibility', 'off')
+                    % Otherwise BDFE is unstable in these cases
+                    plot(1, results.Bstar(1), 'ko', 'HandleVisibility', 'off')
                 end
-                plot(1, Bstar(2), 'ko', 'HandleVisibility', 'off')
+                % BDFE is always unstable when it exists
+                plot(1, results.Bstar(2), 'ko', 'HandleVisibility', 'off')
             end
             % Plot endemic equilibria
-            plot(EE(1, 1), EE(2, 1), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')            
-            plot(EE(1, 2), EE(2, 2), 'ko', 'HandleVisibility', 'off')            
-            plot(EE(1, 3), EE(2, 3), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')            
+            plot(results.EE(1, 1), results.EE(2, 1), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')            
+            plot(results.EE(1, 2), results.EE(2, 2), 'ko', 'HandleVisibility', 'off')            
+            plot(results.EE(1, 3), results.EE(2, 3), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')            
 
             % Plot stable/unstable manifolds (if the saddle EE exists)
-            if nEqs > 1
+            if ~isnan(results.EE(1, 2))
                 ha.ColorOrderIndex = 6;
-                plot(Ystable1(:, 1), Ystable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+                plot(results.Ystable1(:, 1), results.Ystable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
                 ha.ColorOrderIndex = 6;
-                plot(Ystable2(:, 1), Ystable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
-                plot(Yunstable1(:, 1), Yunstable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+                plot(results.Ystable2(:, 1), results.Ystable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+                plot(results.Yunstable1(:, 1), results.Yunstable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
                 ha.ColorOrderIndex = 7;
-                plot(Yunstable2(:, 1), Yunstable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+                plot(results.Yunstable2(:, 1), results.Yunstable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
             end
 
             % Plot trajectories from the two initial conditions
