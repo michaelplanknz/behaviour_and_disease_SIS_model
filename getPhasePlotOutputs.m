@@ -19,7 +19,7 @@ V = V.*Z.^(pQuiv-1);
 
 % Get (B,S) coords for the S nullcline
 Snull1 = 0:dx:1;
-Bnull1 = 1/(1-par.q) * (1 - 1./(R0*Snull1));
+Bnull1 = 1/par.q * (1 - 1./(R0*Snull1));
 
 % Get (B,S) coords for the B nullcline
 Bnull2 = 0:dx:1;

@@ -144,7 +144,7 @@ for iCase = 1:nCases
             % Plot trajectories from the two initial conditions
             %ha.ColorOrderIndex = 1;
             for iIC = 1:nICs
-                plot(traj(iIC).S, traj(iIC).B, 'k-', 'LineWidth', 1.5, 'HandleVisibility', 'off')
+                plot(traj(iIC).S, traj(iIC).B, 'k-', 'LineWidth', 1, 'HandleVisibility', 'off')
             end
             xlim([0.4 1])
             ylim([0 1])

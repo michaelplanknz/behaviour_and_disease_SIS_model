@@ -11,7 +11,7 @@ S = SN+SB;
 
 Omega = par.Tau*B^2 + par.Chi*(1-S);
 
-Lambda = par.Beta * (1-B-SN + par.q*(B-SB));
+Lambda = par.Beta * (1-B-SN + (1-par.q)*(B-SB));
 
 dSNdt = -Lambda*SN + par.Gamma*(1-B-SN) - Omega*SN + par.Alpha*SB; 
 dSBdt = -Lambda*SB + par.Gamma*(B-SB) + Omega*SN - par.Alpha*SB; 

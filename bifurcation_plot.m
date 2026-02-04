@@ -43,16 +43,17 @@ for iCase = 1:nCases
     % BDFEs
     Bstar = 0.5 * (1 + [1, -1]*sqrt(1-4/a));
     
-    % Bifurcation values of q at each of the BDFEs
-    qplus = (1./R0 + Bstar(1) - 1)./Bstar(1);
-    qminus = (1./R0 + Bstar(2) - 1)./Bstar(2);
+    % Bifurcation values of q at each of the BDFEs (transcritical
+    % bifurcations)
+    qplus = (1 - 1./R0)./Bstar(1);
+    qminus = (1 - 1./R0)./Bstar(2);
     
     % Find the value of R0 at the SNBs as a function of q numerically
-    % Start at q=1 and work down (as it's easier to guess SNB location when q=1
-    % as the S nullcline is vertical)
-    qv = 1:-0.01:0;
+    % Start at q=0 and work up (as it's easier to guess SNB location when
+    % q=0 as the S nullcline is vertical)
+    qv = 0:0.01:1;
     
-    % First doe SNB2, which is the SNB with the lower value of B (and higher
+    % First do SNB2, which is the SNB with the lower value of B (and higher
     % value of R0), which exists for all b
     RSNB2 = zeros(size(qv));
     BSNB2 = zeros(size(qv));
@@ -65,7 +66,7 @@ for iCase = 1:nCases
         RSNB2(ii) = x(1);
         BSNB2(ii) = x(2);
         % Calculate the corresponding value of S
-        SSNB2(ii) = 1/(RSNB2(ii)*(1+(qv(ii)-1)*BSNB2(ii)) );
+        SSNB2(ii) = 1/(RSNB2(ii)*(1-qv(ii)*BSNB2(ii)) );
         % Use this solution as the initial guess for the next value of q
         x0 = x;
     end
@@ -83,7 +84,7 @@ for iCase = 1:nCases
             RSNB1(ii) = x(1);
             BSNB1(ii) = x(2);
             % Calculate the corresponding value of S
-            SSNB1(ii) = 1/(RSNB1(ii)*(1+(qv(ii)-1)*BSNB1(ii)) );
+            SSNB1(ii) = 1/(RSNB1(ii)*(1-qv(ii)*BSNB1(ii)) );
             % Use this solution as the initial guess for the next value of q
             x0 = x;
         end
@@ -119,7 +120,7 @@ for iCase = 1:nCases
     xlim([0, max(R0)])
     ylim([0 1])
     xlabel('R_0')
-    ylabel('q')
+    ylabel('q_c')
 
 
 
@@ -131,26 +132,26 @@ for iCase = 1:nCases
         % Region 2
         text(1.1, 0.5, '2. EE low B')
         % Region 3
-        text(1.55, 0.8, '3. EE+EE')
+        text(1.55, 0.2, '3. EE+EE')
         % Region 4
-        text(2.1, 0.9, '4. EE')
-        text(2.15, 0.85, 'high B')
+        text(2.1, 0.15, '4. EE')
+        text(2.15, 0.1, 'high B')
     else
         % Region 5
         text(0.2 ,0.5, '5. NDFE+BDFE')
         % Region 6
-        text(1.03, 0.15, '6. EE+')
-        text(1.05, 0.1, 'BDFE')
+        text(1.03, 0.9, '6. EE+')
+        text(1.05, 0.85, 'BDFE')
         % Region 7
-        text(1.2, 0.48, '7. EE+')
-        text(1.25, 0.43, 'BDFE')
+        text(1.2, 0.57, '7. EE+')
+        text(1.25, 0.52, 'BDFE')
         % Region 8
-        text(1.9, 0.15, '8. BDFE')
+        text(1.9, 0.85, '8. BDFE')
         % Region 9
-        text(1.15, 0.9, '9. EE+')
-        text(1.2, 0.85, 'EE')
+        text(1.18, 0.15, '9. EE+')
+        text(1.23, 0.1, 'EE')
         % Region 10
-        text(1.8, 0.9, '10. EE high B')
+        text(1.75, 0.15, '10. EE high B')
 
 
     end
