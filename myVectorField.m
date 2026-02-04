@@ -1,6 +1,6 @@
 function [dSdt, dBdt] = myVectorField(S, B, par)
 
-% Functiopn to evaluate the vector field [dSdt, dBdt] for the behaviour-dependent transmission
+% Functiopn to evaluate the vector field (dSdt and dBdt) for the behaviour-dependent transmission
 % version of the model
 
 Omega = par.Tau*B.^2 + par.Chi*(1-S);

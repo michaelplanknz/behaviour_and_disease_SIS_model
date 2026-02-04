@@ -1,5 +1,7 @@
 function J = getJacobian(x ,par)
 
+% Calculate Jacobian matrix for the 2D model evaluate at x = [S; B] 
+
 J = zeros(2, 2);
 
 S = x(1);
