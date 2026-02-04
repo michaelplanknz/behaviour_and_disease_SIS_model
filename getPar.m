@@ -32,7 +32,7 @@ elseif iCase == 5
     par.Tau = 5 * par.Alpha;
     par.Beta = 1.9 * par.Gamma;
     par.q = 0.7;
-elseif iCase == 
+elseif iCase == 6
     % Regime 8
     par.Tau = 5 * par.Alpha;
     par.Beta = 1.15 * par.Gamma;

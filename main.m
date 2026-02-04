@@ -8,10 +8,7 @@ figFolder = "figures/";
 nCases = 8;
 
 % Initial conditions for B (all will be plotted in phase plane but only first two will be plotted as time series)
-B01 = 0;
-B02 = 0.9;
-B03 = 0.3;
-B04 = 0.6;
+B0 = [0, 0.9, 0.3, 0.6];
 
 % Initial condition for S
 S0 = 0.95;
@@ -35,10 +32,7 @@ dyquiv = 0.1;
 pQuiv = 0.5;      
 
 % Set ICs
-IC1 = [(1-B01)*S0; B01*S0; B01 ];
-IC2 = [(1-B02)*S0; B02*S0; B02 ];
-IC3 = [(1-B03)*S0; B03*S0; B03 ];
-IC4 = [(1-B04)*S0; B04*S0; B04 ];
+IC = [(1-B0)*S0; B0*S0; B0 ];
 
 
 h = figure(1);
@@ -87,31 +81,10 @@ for iCase = 1:nCases
         end        
         
         % Run the four initial conditions
-        [t1, Y1] = ode45(ODE_handle, tSpan, IC1);
-        [t2, Y2] = ode45(ODE_handle, tSpan, IC2);
-        [t3, Y3] = ode45(ODE_handle, tSpan, IC3);
-        [t4, Y4] = ode45(ODE_handle, tSpan, IC4);
-    
-        % Extract epi variables
-        SN1 = Y1(:, 1);
-        SB1 = Y1(:, 2);
-        B1 = Y1(:, 3);
-        S1 = SN1+SB1;
-    
-        SN2 = Y2(:, 1);
-        SB2 = Y2(:, 2);
-        B2 = Y2(:, 3);
-        S2 = SN2+SB2;
-
-        SN3 = Y3(:, 1);
-        SB3 = Y3(:, 2);
-        B3 = Y3(:, 3);
-        S3 = SN3+SB3;
-    
-        SN4 = Y4(:, 1);
-        SB4 = Y4(:, 2);
-        B4 = Y4(:, 3);
-        S4 = SN4+SB4;
+        nICs = length(B0);
+        for iIC = 1:nICs
+            traj(iIC) = solveODE(ODE_handle, tSpan, IC(:, iIC));
+        end
 
         % Plot phase plane (for trans-modulated model only)
         if iType == 1
@@ -159,16 +132,17 @@ for iCase = 1:nCases
                     end
                 end
             end
-            nICs = min(3, size(xr0, 2));
+            % Number of EEs to look for:
+            nEqs = min(3, size(xr0, 2));
             EE = nan(2, 3);
-            for iIC = 1:nICs
-                EE(:, iIC) = fsolve(@(x)my2Dsystem(0, x, par), xr0(:, iIC), opts );
+            for iEq = 1:nEqs
+                EE(:, iEq) = fsolve(@(x)my2Dsystem(0, x, par), xr0(:, iEq), opts );
                 % Jacobian analysis for the saddle EE (which is always the
                 % 2nd one)
-                if iIC == 2
+                if iEq == 2
                     % Get Jacobian and calculate its eigenvalues and
                     % eigenvectors
-                    J = getJacobian(EE(:, iIC), par);
+                    J = getJacobian(EE(:, iEq), par);
                     [eV, eD] = eig(J);
                     eD = diag(eD);
                     iStable = find(real(eD) < 0);
@@ -177,13 +151,13 @@ for iCase = 1:nCases
                     eigUnstable = eV(:, iUnstable);
 
                     % Solve for stable manifrold (run backwards in time)
-                    ICstable1 = EE(:, iIC) + pert*eigStable;
-                    ICstable2 = EE(:, iIC) - pert*eigStable;
+                    ICstable1 = EE(:, iEq) + pert*eigStable;
+                    ICstable2 = EE(:, iEq) - pert*eigStable;
                     [~, Ystable1] = ode45(@(t, y)(-my2Dsystem(t, y, par)), tManifold, ICstable1);
                     [~, Ystable2] = ode45(@(t, y)(-my2Dsystem(t, y, par)), tManifold, ICstable2);                    
                     % Solve for unstable manifrold (run forwards in time)
-                    ICunstable1 = EE(:, iIC) + pert*eigUnstable;
-                    ICunstable2 = EE(:, iIC) - pert*eigUnstable;
+                    ICunstable1 = EE(:, iEq) + pert*eigUnstable;
+                    ICunstable2 = EE(:, iEq) - pert*eigUnstable;
                     [~, Yunstable1] = ode45(@(t, y)(my2Dsystem(t, y, par)), tManifold, ICunstable1);
                     [~, Yunstable2] = ode45(@(t, y)(my2Dsystem(t, y, par)), tManifold, ICunstable2);
                 end
@@ -226,7 +200,7 @@ for iCase = 1:nCases
             plot(EE(1, 3), EE(2, 3), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')            
 
             % Plot stable/unstable manifolds (if the saddle EE exists)
-            if iIC > 1
+            if nEqs > 1
                 ha.ColorOrderIndex = 6;
                 plot(Ystable1(:, 1), Ystable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
                 ha.ColorOrderIndex = 6;
@@ -238,14 +212,9 @@ for iCase = 1:nCases
 
             % Plot trajectories from the two initial conditions
             %ha.ColorOrderIndex = 1;
-            plot(S1, B1, 'k-', 'LineWidth', 1.5, 'HandleVisibility', 'off')
-            %ha.ColorOrderIndex = 1;
-            plot(S2, B2, 'k-', 'LineWidth', 1.5, 'HandleVisibility', 'off')
-            %ha.ColorOrderIndex = 1;
-            plot(S3, B3, 'k-', 'LineWidth', 1.5, 'HandleVisibility', 'off')
-            %ha.ColorOrderIndex = 1;
-            plot(S4, B4, 'k-', 'LineWidth', 1.5, 'HandleVisibility', 'off')
-
+            for iIC = 1:nICs
+                plot(traj(iIC).S, traj(iIC).B, 'k-', 'LineWidth', 1.5, 'HandleVisibility', 'off')
+            end
             xlim([0.4 1])
             ylim([0 1])
             xlabel('S')
@@ -257,22 +226,18 @@ for iCase = 1:nCases
         % Plot time series
         iTile = tileNum(iCase) + iType; 
         nexttile(iTile);
-        plot(t1, 1-S1, 'LineWidth', 1.5)
-        hold on
-        plot(t1, B1, 'LineWidth', 1.5)
-        if iType == 2
-            % Only need to plot S_B/S for the susceptibility model as it is
-            % identical to B in the transmission model
-            plot(t1, SB1./S1, 'LineWidth', 1.5)
-        end
-        ha = gca;
-        ha.ColorOrderIndex = 1;
-        plot(t2, 1-S2, '--', 'LineWidth', 1.5)
-        plot(t2, B2, '--', 'LineWidth', 1.5)
-        if iType == 2
-            % Only need to plot S_B/S for the susceptibility model as it is
-            % identical to B in the transmission model
-            plot(t2, SB2./S2, '--', 'LineWidth', 1.5)
+        ls = ["-", "--"];
+        for iIC = 1:2
+            ha = gca;
+            ha.ColorOrderIndex = 1;
+            plot(traj(iIC).t, 1-traj(iIC).S, 'LineStyle', ls(iIC), 'LineWidth', 1.5)
+            hold on
+            plot(traj(iIC).t, traj(iIC).B, 'LineStyle', ls(iIC), 'LineWidth', 1.5)
+            if iType == 2
+                % Only need to plot S_B/S for the susceptibility model as it is
+                % identical to B in the transmission model
+                plot(traj(iIC).t, traj(iIC).SB./traj(iIC).S, 'LineStyle', ls(iIC), 'LineWidth', 1.5)
+            end
         end
         % Plot equilibrium without behaviour I = 1-1/R0
         yline(1-1/R0, 'k:');
@@ -296,7 +261,7 @@ for iFig = 1:3
     h = figure(iFig);
     nexttile(1);
     ha = gca;
-    quiver(0, 0, 0, 0, 'color', greyCol, 'DisplayName', 'vec. field')
+    quiver(0, 0, 0, 0, 'color', greyCol, 'DisplayName', 'vector field')
     ha.ColorOrderIndex = 4;
     plot(nan, nan, '--', 'LineWidth', 2, 'DisplayName', 'S null')
     plot(nan, nan, '--', 'LineWidth', 2, 'DisplayName', 'B null')
