@@ -194,8 +194,8 @@ for iFig = 1:3
     ha = gca;
     quiver(0, 0, 0, 0, 'color', greyCol, 'DisplayName', 'vector field')
     ha.ColorOrderIndex = 4;
-    plot(nan, nan, '--', 'LineWidth', 2, 'DisplayName', 'S null')
-    plot(nan, nan, '--', 'LineWidth', 2, 'DisplayName', 'B null')
+    plot(nan, nan, '--', 'LineWidth', 2, 'DisplayName', 'S nullcline')
+    plot(nan, nan, '--', 'LineWidth', 2, 'DisplayName', 'B nullcline')
     plot(nan, nan, '-', 'LineWidth', 2, 'DisplayName', 'stable mnfld')
     plot(nan, nan, '-', 'LineWidth', 2, 'DisplayName', 'unstable mnfld')
     plot(nan, nan, 'k-', 'LineWidth', 1.5, 'DisplayName', 'trajectory')
