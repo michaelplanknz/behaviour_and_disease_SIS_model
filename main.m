@@ -56,8 +56,11 @@ tileNum = [1, 4, 7, 1, 4, 1, 4, 7];
 desc = ["EE low B", "bistable EEs", "EE high B", "bistable EEs", "EE high B", "bistable EE/BDFE", "bistable EE/BDFE", "BDFE" ];
     
 lbls = ["(a)", "(b)", "(c)", "(d)", "(e)", "(f)", "(g)", "(h)", "(i)", "(j)", "(k)", "(l)", "(m)", "(n)", "(o)" ];
+colOrd = colororder;
 greyCol =  0.8*[1 1 1];
 SSSmarksize = 22;
+iArr = 30;
+
 
 % Run and plot each parameter combination in turn
 for iCase = 1:nCases
@@ -91,6 +94,7 @@ for iCase = 1:nCases
 
             results = getPhasePlotOutputs(par, dx, dxquiv, dyquiv, pQuiv, tManifold, pert, opts);
 
+
             % Plot vector field
             iTile = tileNum(iCase);
             nexttile(iTile);
@@ -110,6 +114,40 @@ for iCase = 1:nCases
             plot(results.Snull2, results.Bnull2, '--', 'LineWidth', 2, 'HandleVisibility', 'off')
             ha.ColorOrderIndex = 5;
 
+          
+
+            % Plot stable/unstable manifolds (if the saddle EE exists)
+            if ~isempty(results.Ystable1)
+                ha.ColorOrderIndex = 6;
+                plot(results.Ystable1(:, 1), results.Ystable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+                ar = orbitArrow(flipud(results.Ystable1(:, 1)), flipud(results.Ystable1(:, 2)), "horiz", 0.75, colOrd(6, :));
+            end
+            if ~isempty(results.Ystable2)
+                ha.ColorOrderIndex = 6;
+                plot(results.Ystable2(:, 1), results.Ystable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+                ar = orbitArrow(flipud(results.Ystable2(:, 1)), flipud(results.Ystable2(:, 2)), "horiz", 0.5, colOrd(6, :));
+            end
+            if ~isempty(results.Yunstable1)
+                plot(results.Yunstable1(:, 1), results.Yunstable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+                ar = orbitArrow(results.Yunstable1(:, 1), results.Yunstable1(:, 2), "vert", 0.7, colOrd(7, :));
+            end
+            if ~isempty(results.Yunstable2)
+                ha.ColorOrderIndex = 7;
+                plot(results.Yunstable2(:, 1), results.Yunstable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+                ar = orbitArrow(results.Yunstable2(:, 1), results.Yunstable2(:, 2), "vert", 0.7, colOrd(7, :));
+            end
+
+
+
+            % Plot trajectories from the two initial conditions
+            for iIC = 1:nICs
+                plot(traj(iIC).S, traj(iIC).B, 'k-', 'LineWidth', 1, 'HandleVisibility', 'off');
+                ar = orbitArrow( traj(iIC).S, traj(iIC).B, "ind", iArr, [0 0 0]);
+%                 ar = annotation('arrow', traj(iIC).S(iArr:iArr+1), traj(iIC).B(iArr:iArr+1));
+%                 ar.Parent = gca;
+            end
+
+
             % Plot equilibria
             % Plot NDFE
             plot(1, 0, 'ko', 'HandleVisibility', 'off')
@@ -128,24 +166,9 @@ for iCase = 1:nCases
             % Plot endemic equilibria
             plot(results.EE(1, 1), results.EE(2, 1), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')            
             plot(results.EE(1, 2), results.EE(2, 2), 'ko', 'HandleVisibility', 'off')            
-            plot(results.EE(1, 3), results.EE(2, 3), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')            
+            plot(results.EE(1, 3), results.EE(2, 3), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')  
 
-            % Plot stable/unstable manifolds (if the saddle EE exists)
-            if ~isnan(results.EE(1, 2))
-                ha.ColorOrderIndex = 6;
-                plot(results.Ystable1(:, 1), results.Ystable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
-                ha.ColorOrderIndex = 6;
-                plot(results.Ystable2(:, 1), results.Ystable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
-                plot(results.Yunstable1(:, 1), results.Yunstable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
-                ha.ColorOrderIndex = 7;
-                plot(results.Yunstable2(:, 1), results.Yunstable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
-            end
 
-            % Plot trajectories from the two initial conditions
-            %ha.ColorOrderIndex = 1;
-            for iIC = 1:nICs
-                plot(traj(iIC).S, traj(iIC).B, 'k-', 'LineWidth', 1, 'HandleVisibility', 'off')
-            end
             xlim([0.4 1])
             ylim([0 1])
             xlabel('S')

@@ -58,32 +58,51 @@ Yunstable1 = [];
 Yunstable2 = [];
 for iEq = 1:nEqs
     EE(:, iEq) = fsolve(@(x)my2Dsystem(0, x, par), xr0(:, iEq), opts );
-
-    % Find stable and unstable manifolds for the saddle EE (which is always the
-    % 2nd one if it exists)
-    if iEq == 2
-        % Get Jacobian and calculate its eigenvalues and
-        % eigenvectors
-        J = getJacobian(EE(:, iEq), par);
-        [eV, eD] = eig(J);
-        eD = diag(eD);
-        iStable = find(real(eD) < 0);
-        iUnstable = find(real(eD) > 0);
-        eigStable = eV(:, iStable);
-        eigUnstable = eV(:, iUnstable);
-
-        % Solve for stable manifrold (run backwards in time)
-        ICstable1 = EE(:, iEq) + pert*eigStable;
-        ICstable2 = EE(:, iEq) - pert*eigStable;
-        [~, Ystable1] = ode45(@(t, y)(-my2Dsystem(t, y, par)), tManifold, ICstable1);
-        [~, Ystable2] = ode45(@(t, y)(-my2Dsystem(t, y, par)), tManifold, ICstable2);                    
-        % Solve for unstable manifrold (run forwards in time)
-        ICunstable1 = EE(:, iEq) + pert*eigUnstable;
-        ICunstable2 = EE(:, iEq) - pert*eigUnstable;
-        [~, Yunstable1] = ode45(@(t, y)(my2Dsystem(t, y, par)), tManifold, ICunstable1);
-        [~, Yunstable2] = ode45(@(t, y)(my2Dsystem(t, y, par)), tManifold, ICunstable2);
-    end
 end
+
+% Find stable and unstable manifolds for the saddle equilibrium (if one exists) 
+if nEqs > 1
+    % Usually this is the 2nd of 3 EEs...
+    saddleEq = EE(:, 2);
+elseif nEqs == 1 & 1/par.q*(1-1/R0) < Bstar(2)
+    % ...but there is also a case where BDFE- is a saddle (regime 6)
+    saddleEq = [1; Bstar(2)];
+else
+    saddleEq = [];
+end
+
+if ~isempty(saddleEq)
+    % Get Jacobian and calculate its eigenvalues and
+    % eigenvectors
+    J = getJacobian(saddleEq, par);
+    [eV, eD] = eig(J);
+    eD = diag(eD);
+    iStable = find(real(eD) < 0);
+    iUnstable = find(real(eD) > 0);
+    eigStable = eV(:, iStable);
+    eigUnstable = eV(:, iUnstable);
+
+    % Solve for stable manifrold (run backwards in time)
+    ICstable1 = saddleEq + pert*eigStable;
+    ICstable2 = saddleEq - pert*eigStable;
+    if ICstable1(1) <= 1
+        [~, Ystable1] = ode45(@(t, y)(-my2Dsystem(t, y, par)), tManifold, ICstable1);
+    end
+    if ICstable1(2) <= 1
+        [~, Ystable2] = ode45(@(t, y)(-my2Dsystem(t, y, par)), tManifold, ICstable2);                    
+    end
+    % Solve for unstable manifrold (run forwards in time)
+    ICunstable1 = saddleEq + pert*eigUnstable;
+    ICunstable2 = saddleEq - pert*eigUnstable;
+    [~, Yunstable1] = ode45(@(t, y)(my2Dsystem(t, y, par)), tManifold, ICunstable1);
+    [~, Yunstable2] = ode45(@(t, y)(my2Dsystem(t, y, par)), tManifold, ICunstable2);
+end
+
+% Truncate manifolds to stay inside [0,1]x[0,1]
+Ystable1 = trunc01(Ystable1);
+Ystable2 = trunc01(Ystable2);
+Yunstable1 = trunc01(Yunstable1);
+Yunstable2 = trunc01(Yunstable2);
 
 % Store outputs in results structure
 results.sx = sx;
