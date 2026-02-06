@@ -12,8 +12,8 @@ Omega = par.Tau*B^2 + par.Chi*(1-S);
 
 Lambda = par.Beta * (1-B-SN + (1-par.qc)*(B-SB));
 
-dSNdt = -par.Beta*(1-S)*SN + par.Gamma*(1-B-SN) - Omega*SN + par.Alpha*SB; 
-dSBdt = -par.Beta*(1-par.qs)*(1-S)*SB + par.Gamma*(B-SB) + Omega*SN - par.Alpha*SB; 
+dSNdt = -Lambda*SN + par.Gamma*(1-B-SN) - Omega*SN + par.Alpha*SB; 
+dSBdt = -(1-par.qs)*Lambda*SB + par.Gamma*(B-SB) + Omega*SN - par.Alpha*SB; 
 dBdt = Omega*(1-B) - par.Alpha*B;
 
 dydt = [dSNdt; dSBdt; dBdt];

@@ -58,152 +58,156 @@ desc = ["EE low B", "bistable EEs", "EE high B", "bistable EEs", "EE high B", "b
 lbls = ["(a)", "(b)", "(c)", "(d)", "(e)", "(f)", "(g)", "(h)", "(i)", "(j)", "(k)", "(l)", "(m)", "(n)", "(o)" ];
 colOrd = colororder;
 greyCol =  0.8*[1 1 1];
+ls = ["-", "--"];
 SSSmarksize = 22;
 iArr = 30;
 
 
 % Run and plot each parameter combination in turn
 for iCase = 1:nCases
+    % Get parameter values for this case
     par = getPar(iCase);
+
+    % Set up parameter structure for the susceptibility-modulated model
+    parSusMod = par;
+    parSusMod.qs = par.qc;
+    parSusMod.qc = 0;
 
     % Calculate R0
     R0 = par.Beta/par.Gamma;
 
     h = figure(figNum(iCase));
-
-
-
-    % Do the same thing for the susceptibility and transmission versions of the
-    % model
-    for iType = 1:2
-        % Select which ODE model to run
-        if iType == 1
-            ODE_handle = @(t, y)myODEs_trans(t, y, par);
-        else
-            ODE_handle = @(t, y)myODEs_suscept(t, y, par);
-        end        
-        
-        % Run the four initial conditions
-        nICs = length(B0);
-        for iIC = 1:nICs
-            traj(iIC) = solveODE(ODE_handle, tSpan, IC(:, iIC));
-        end
-
-        % Plot phase plane (for trans-modulated model only)
-        if iType == 1
-
-            results = getPhasePlotOutputs(par, dx, dxquiv, dyquiv, pQuiv, tManifold, pert, opts);
-
-
-            % Plot vector field
-            iTile = tileNum(iCase);
-            nexttile(iTile);
-            quiver(results.sx, results.by, results.U, results.V, 'Color', greyCol, 'HandleVisibility', 'off');
-            hold on
-
-            ha = gca;
-
-            % Plot S nullcline
-            ha.ColorOrderIndex = 4;
-            plot(results.Snull1, results.Bnull1, '--', 'LineWidth', 2, 'HandleVisibility', 'off')
-            % Plot the other branch of the S nullcline which is the line S=1
-            ha.ColorOrderIndex = 4;
-            plot([1 1], [0 1], '--', 'LineWidth', 2, 'HandleVisibility', 'off')
-
-            % Plot B nullcline
-            plot(results.Snull2, results.Bnull2, '--', 'LineWidth', 2, 'HandleVisibility', 'off')
-            ha.ColorOrderIndex = 5;
-
-          
-
-            % Plot stable/unstable manifolds (if the saddle EE exists)
-            if ~isempty(results.Ystable1)
-                ha.ColorOrderIndex = 6;
-                plot(results.Ystable1(:, 1), results.Ystable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
-                ar = orbitArrow(flipud(results.Ystable1(:, 1)), flipud(results.Ystable1(:, 2)), "horiz", 0.75, colOrd(6, :));
-            end
-            if ~isempty(results.Ystable2)
-                ha.ColorOrderIndex = 6;
-                plot(results.Ystable2(:, 1), results.Ystable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
-                ar = orbitArrow(flipud(results.Ystable2(:, 1)), flipud(results.Ystable2(:, 2)), "horiz", 0.5, colOrd(6, :));
-            end
-            if ~isempty(results.Yunstable1)
-                plot(results.Yunstable1(:, 1), results.Yunstable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
-                ar = orbitArrow(results.Yunstable1(:, 1), results.Yunstable1(:, 2), "vert", 0.7, colOrd(7, :));
-            end
-            if ~isempty(results.Yunstable2)
-                ha.ColorOrderIndex = 7;
-                plot(results.Yunstable2(:, 1), results.Yunstable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
-                ar = orbitArrow(results.Yunstable2(:, 1), results.Yunstable2(:, 2), "vert", 0.7, colOrd(7, :));
-            end
-
-
-
-            % Plot trajectories from the two initial conditions
-            for iIC = 1:nICs
-                plot(traj(iIC).S, traj(iIC).B, 'k-', 'LineWidth', 1, 'HandleVisibility', 'off');
-                ar = orbitArrow( traj(iIC).S, traj(iIC).B, "ind", iArr, [0 0 0]);
-%                 ar = annotation('arrow', traj(iIC).S(iArr:iArr+1), traj(iIC).B(iArr:iArr+1));
-%                 ar.Parent = gca;
-            end
-
-
-            % Plot equilibria
-            % Plot NDFE
-            plot(1, 0, 'ko', 'HandleVisibility', 'off')
-            % Plot BDFEs (if real)
-            if isreal(results.Bstar(1))
-                if ismember(iCase, [6, 7, 8])
-                    % BDFE+ is stable in these cases
-                    plot(1, results.Bstar(1), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')
-                else
-                    % Otherwise BDFE is unstable in these cases
-                    plot(1, results.Bstar(1), 'ko', 'HandleVisibility', 'off')
-                end
-                % BDFE is always unstable when it exists
-                plot(1, results.Bstar(2), 'ko', 'HandleVisibility', 'off')
-            end
-            % Plot endemic equilibria
-            plot(results.EE(1, 1), results.EE(2, 1), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')            
-            plot(results.EE(1, 2), results.EE(2, 2), 'ko', 'HandleVisibility', 'off')            
-            plot(results.EE(1, 3), results.EE(2, 3), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')  
-
-
-            xlim([0.4 1])
-            ylim([0 1])
-            xlabel('S')
-            ylabel('B')
-            title("R_0 = " + sprintf('%.2f', R0) + ", " + desc(iCase) + newline + lbls(iTile))
-        end
-
-
-        % Plot time series
-        iTile = tileNum(iCase) + iType; 
-        nexttile(iTile);
-        ls = ["-", "--"];
-        for iIC = 1:2
-            ha = gca;
-            ha.ColorOrderIndex = 1;
-            plot(traj(iIC).t, 1-traj(iIC).S, 'LineStyle', ls(iIC), 'LineWidth', 1.5)
-            hold on
-            plot(traj(iIC).t, traj(iIC).B, 'LineStyle', ls(iIC), 'LineWidth', 1.5)
-            if iType == 2
-                % Only need to plot S_B/S for the susceptibility model as it is
-                % identical to B in the transmission model
-                plot(traj(iIC).t, traj(iIC).SB./traj(iIC).S, 'LineStyle', ls(iIC), 'LineWidth', 1.5)
-            end
-        end
-        % Plot equilibrium without behaviour I = 1-1/R0
-        yline(1-1/R0, 'k:');
-        ylim([0 1])
-        xlabel('time (days)')
-        title(lbls(iTile))
+   
+    
+    % Run the four initial conditions
+    nICs = length(B0);
+    for iIC = 1:nICs
+        trajTransMod(iIC) = solveODE(@(t, y)fullModelODEs(t, y, par), tSpan, IC(:, iIC));
+        trajSusMod(iIC) = solveODE(@(t, y)fullModelODEs(t, y, parSusMod), tSpan, IC(:, iIC));
     end
 
 
 
+    results = getPhasePlotOutputs(par, dx, dxquiv, dyquiv, pQuiv, tManifold, pert, opts);
+
+
+    % Plot vector field
+    iTile = tileNum(iCase);
+    nexttile(iTile);
+    quiver(results.sx, results.by, results.U, results.V, 'Color', greyCol, 'HandleVisibility', 'off');
+    hold on
+
+    ha = gca;
+
+    % Plot S nullcline
+    ha.ColorOrderIndex = 4;
+    plot(results.Snull1, results.Bnull1, '--', 'LineWidth', 2, 'HandleVisibility', 'off')
+    % Plot the other branch of the S nullcline which is the line S=1
+    ha.ColorOrderIndex = 4;
+    plot([1 1], [0 1], '--', 'LineWidth', 2, 'HandleVisibility', 'off')
+
+    % Plot B nullcline
+    plot(results.Snull2, results.Bnull2, '--', 'LineWidth', 2, 'HandleVisibility', 'off')
+    ha.ColorOrderIndex = 5;
+
+  
+
+    % Plot stable/unstable manifolds (if the saddle EE exists)
+    if ~isempty(results.Ystable1)
+        ha.ColorOrderIndex = 6;
+        plot(results.Ystable1(:, 1), results.Ystable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+        ar = orbitArrow(flipud(results.Ystable1(:, 1)), flipud(results.Ystable1(:, 2)), "horiz", 0.75, colOrd(6, :));
+    end
+    if ~isempty(results.Ystable2)
+        ha.ColorOrderIndex = 6;
+        plot(results.Ystable2(:, 1), results.Ystable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+        ar = orbitArrow(flipud(results.Ystable2(:, 1)), flipud(results.Ystable2(:, 2)), "horiz", 0.5, colOrd(6, :));
+    end
+    if ~isempty(results.Yunstable1)
+        plot(results.Yunstable1(:, 1), results.Yunstable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+        ar = orbitArrow(results.Yunstable1(:, 1), results.Yunstable1(:, 2), "vert", 0.7, colOrd(7, :));
+    end
+    if ~isempty(results.Yunstable2)
+        ha.ColorOrderIndex = 7;
+        plot(results.Yunstable2(:, 1), results.Yunstable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
+        ar = orbitArrow(results.Yunstable2(:, 1), results.Yunstable2(:, 2), "vert", 0.7, colOrd(7, :));
+    end
+
+
+
+    % Plot trajectories from the two initial conditions
+    for iIC = 1:nICs
+        plot(trajTransMod(iIC).S, trajTransMod(iIC).B, 'k-', 'LineWidth', 1, 'HandleVisibility', 'off');
+        ar = orbitArrow( trajTransMod(iIC).S, trajTransMod(iIC).B, "ind", iArr, [0 0 0]);
+    end
+
+
+    % Plot equilibria
+    % Plot NDFE
+    plot(1, 0, 'ko', 'HandleVisibility', 'off')
+    % Plot BDFEs (if real)
+    if isreal(results.Bstar(1))
+        if ismember(iCase, [6, 7, 8])
+            % BDFE+ is stable in these cases
+            plot(1, results.Bstar(1), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')
+        else
+            % Otherwise BDFE is unstable in these cases
+            plot(1, results.Bstar(1), 'ko', 'HandleVisibility', 'off')
+        end
+        % BDFE is always unstable when it exists
+        plot(1, results.Bstar(2), 'ko', 'HandleVisibility', 'off')
+    end
+    % Plot endemic equilibria
+    plot(results.EE(1, 1), results.EE(2, 1), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')            
+    plot(results.EE(1, 2), results.EE(2, 2), 'ko', 'HandleVisibility', 'off')            
+    plot(results.EE(1, 3), results.EE(2, 3), 'k.', 'MarkerSize', SSSmarksize, 'HandleVisibility', 'off')  
+
+
+    xlim([0.4 1])
+    ylim([0 1])
+    xlabel('S')
+    ylabel('B')
+    title("R_0 = " + sprintf('%.2f', R0) + ", " + desc(iCase) + newline + lbls(iTile))
+
+
+    % Plot time series for transmission-modulated model
+    iTile = tileNum(iCase) + 1; 
+    nexttile(iTile);
+    for iIC = 1:2
+        ha = gca;
+        ha.ColorOrderIndex = 1;
+        plot(trajTransMod(iIC).t, 1-trajTransMod(iIC).S, 'LineStyle', ls(iIC), 'LineWidth', 1.5)
+        hold on
+        plot(trajTransMod(iIC).t, trajTransMod(iIC).B, 'LineStyle', ls(iIC), 'LineWidth', 1.5)
+    end
+    % Plot equilibrium without behaviour I = 1-1/R0
+    yline(1-1/R0, 'k:');
+    ylim([0 1])
+    xlabel('time (days)')
+    title(lbls(iTile))
+
+
+    % Plot time series for susceptibility-modulated model
+    iTile = iTile+1;
+    nexttile(iTile);
+    for iIC = 1:2
+        ha = gca;
+        ha.ColorOrderIndex = 1;
+        plot(trajSusMod(iIC).t, 1-trajSusMod(iIC).S, 'LineStyle', ls(iIC), 'LineWidth', 1.5)
+        hold on
+        plot(trajSusMod(iIC).t, trajSusMod(iIC).B, 'LineStyle', ls(iIC), 'LineWidth', 1.5)
+        % For the susceptibility model plot S_B/S 
+        plot(trajSusMod(iIC).t, trajSusMod(iIC).SB./trajSusMod(iIC).S, 'LineStyle', ls(iIC), 'LineWidth', 1.5)
+    end
+    % Plot equilibrium without behaviour I = 1-1/R0
+    yline(1-1/R0, 'k:');
+    ylim([0 1])
+    xlabel('time (days)')
+    title(lbls(iTile))
+
+
      if ismember(iCase, [1 4 6])
-        sgtitle("\tau/\alpha = " + sprintf('%.1f', par.Tau/par.Alpha) + ", q = " +sprintf('%.1f', par.q) );
+        sgtitle("\tau/\alpha = " + sprintf('%.1f', par.Tau/par.Alpha) + ", q = " +sprintf('%.1f', par.qc) );
         nexttile(2);  
         lgd = legend('I', 'B', 'Location', 'northeast');
         nexttile(3);

@@ -37,7 +37,7 @@ for iCase = 1:nCases
     for iPoint = 1:nPoints(iCase)
         par = getPar(firstPoint(iCase) + iPoint-1 );
         R0point(iPoint) = par.Beta/par.Gamma;
-        qpoint(iPoint) = par.q;
+        qpoint(iPoint) = par.qc;
     end
     
     % BDFEs
