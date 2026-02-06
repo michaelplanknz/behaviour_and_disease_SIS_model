@@ -1,4 +1,7 @@
-function makePlots(iTile, results, trajTransMod, trajSusMod, par, desc)    
+function makePlots(iTile, results, trajTransMod, trajSusMod, par, desc)  
+
+% Make a phase plot and time series plots for this parameter combination in
+% the specified tiles of the current figure
 
 % Plot settings and labels
 lbls = ["(a)", "(b)", "(c)", "(d)", "(e)", "(f)", "(g)", "(h)", "(i)", "(j)", "(k)", "(l)", "(m)", "(n)", "(o)" ];
@@ -6,6 +9,7 @@ colOrd = colororder;
 greyCol =  0.8*[1 1 1];
 ls = ["-", "--"];
 SSSmarksize = 22;
+% Index of trajcetory solution to place arrow at
 iArr = 30;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

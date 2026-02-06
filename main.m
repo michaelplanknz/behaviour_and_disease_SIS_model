@@ -26,7 +26,6 @@ dx = 0.001;
 dxquiv = 0.05;
 dyquiv = 0.1;
 
-
 % Power for vector field arrow length plotting (1 for actual length, 0 for
 % all the same length)
 pQuiv = 0.5;      
@@ -34,7 +33,7 @@ pQuiv = 0.5;
 % Set ICs
 IC = [(1-B0)*S0; B0*S0; B0 ];
 
-
+% Setup figures
 h = figure(1);
 h.Position = [ 89   126   931   864];
 tiledlayout(3, 3, "TileSpacing", "compact");
@@ -52,7 +51,7 @@ tiledlayout(3, 3, "TileSpacing", "compact");
 figNum = [ones(1, 3), 2*ones(1, 2), 3*ones(1, 3)];
 tileNum = [1, 4, 7, 1, 4, 1, 4, 7];
 
-
+% Description of parameter regimes being plotted (regimes 2, 3, 4, 6, 7, 8, 9, 10)
 desc = ["EE low B", "bistable EEs", "EE high B", "bistable EEs", "EE high B", "bistable EE/BDFE", "bistable EE/BDFE", "BDFE" ];
     
 
@@ -65,12 +64,7 @@ for iCase = 1:nCases
     parSusMod = par;
     parSusMod.qs = par.qc;
     parSusMod.qc = 0;
-
-
-
-    h = figure(figNum(iCase));
-   
-    
+     
     % Get phase plane results
     results = getPhasePlotOutputs(par, dx, dxquiv, dyquiv, pQuiv, tManifold, pert, opts);
 
@@ -81,11 +75,9 @@ for iCase = 1:nCases
         trajSusMod(iIC) = solveODE(@(t, y)fullModelODEs(t, y, parSusMod), tSpan, IC(:, iIC));
     end
 
+    h = figure(figNum(iCase));
     iTile = tileNum(iCase);
-    makePlots(iTile, results, trajTransMod, trajSusMod, par, desc(iCase))
-
-    
-
+    makePlots(iTile, results, trajTransMod, trajSusMod, par, desc(iCase))  
 end
 
 
