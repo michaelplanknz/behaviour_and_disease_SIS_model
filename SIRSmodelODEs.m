@@ -1,6 +1,6 @@
 function dydt = SIRSmodelODEs(t, y, par)
 
-% Function to evaluate the ODEs for S_N, S_B and B in the full model
+% Function to evaluate the ODEs for S_N, S_B, I_N, I_B and B in the SIRS version of the model
 
 SN = y(1);
 SB = y(2);

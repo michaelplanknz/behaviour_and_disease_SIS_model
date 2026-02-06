@@ -1,6 +1,8 @@
 clear 
 close all
 
+% Run the SIRS model and plot the results
+
 % Figure folder
 figFolder = "figures/";
 
