@@ -14,7 +14,7 @@ B0 = [0, 0.9, 0.3, 0.6];
 S0 = 0.95;
 
 % Time range        1000 for slow, 300 for fast
-tSpan = 0:0.1:100;
+tSpan = (0:0.1:100);
 
 % Time span and perturbation size for finding stable/unstable manifolds
 tManifold = [0, 1e3];
@@ -62,9 +62,14 @@ for iCase = 1:nCases
 
     % Set up parameter structure for the susceptibility-modulated model
     parSusMod = par;
-    parSusMod.qs = par.qc;
     parSusMod.qc = 0;
-     
+    parSusMod.qs = par.qc;
+    % Split the behaviour effect between transission and susceptibility for
+    % a total effect of the same size (par.qc)
+    %parSusMod.qc = 1 - sqrt(1-par.qc);
+    %parSusMod.qs = 1 - sqrt(1-par.qc);
+    
+
     % Get phase plane results
     results = getPhasePlotOutputs(par, dx, dxquiv, dyquiv, pQuiv, tManifold, pert, opts);
 

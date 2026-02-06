@@ -153,7 +153,7 @@ end
 % Plot equilibrium without behaviour I = 1-1/R0
 yline(1-1/R0, 'k:');
 ylim([0 1])
-xlabel('time (days)')
+xlabel('time')
 title(lbls(iTile))
 
 % Add legend to time series plots for the first case in each figure
