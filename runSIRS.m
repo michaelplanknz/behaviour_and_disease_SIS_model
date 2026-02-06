@@ -14,7 +14,7 @@ par.Tau = 5 * par.Alpha;
 par.Beta = 2 * par.Gamma; 
 par.qs = 0;
 par.qc = 0.7;
-par.w = 0.1;
+par.w = 0.05;
 
 % Initial conditions
 i0 = 0.001;
