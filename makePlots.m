@@ -128,7 +128,7 @@ end
 % Plot equilibrium without behaviour I = 1-1/R0
 yline(1-1/R0, 'k:');
 ylim([0 1])
-xlabel('time (days)')
+xlabel('time')
 title(lbls(iTile))
 if iTile == 2
     % Add legend and figure title for first row of plots

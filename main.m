@@ -14,10 +14,10 @@ B0 = [0, 0.9, 0.3, 0.6];
 S0 = 0.95;
 
 % Time range        1000 for slow, 300 for fast
-tSpan = 0:1000;
+tSpan = 0:0.1:100;
 
 % Time span and perturbation size for finding stable/unstable manifolds
-tManifold = [0, 1e4];
+tManifold = [0, 1e3];
 pert = 1e-4;
 opts = optimoptions('fsolve', 'FunctionTolerance', 1e-10, 'StepTolerance', 1e-10, 'Display' ,'off', 'Algorithm', 'levenberg-marquardt');
 

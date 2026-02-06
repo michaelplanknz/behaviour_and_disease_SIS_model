@@ -2,8 +2,8 @@ function par = getPar(iCase)
 
 % Set ODE model parameters for each case
 
-par.Gamma = 0.1;        % 0.2
-par.Alpha = 0.025;             
+par.Gamma = 1;        % 0.2
+par.Alpha = 0.25;             
 par.Chi = 0.2 * par.Alpha;
 par.qs = 0;
 
