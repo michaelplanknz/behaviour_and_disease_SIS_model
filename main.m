@@ -65,10 +65,12 @@ for iSet = 1:nSets
         % Set up parameter structure for the susceptibility-modulated model
         parSusMod = par;
         if iSet < 4
+            % For most sets, maek the transmission effect zero and put all the effect into
+            % reducing susceptibility
             parSusMod.qc = 0;
             parSusMod.qs = par.qc;
         else
-        % Split the behaviour effect between transission and susceptibility for
+        % In the 4th set, split the behaviour effect equally between transission and susceptibility for
         % a total effect of the same size (par.qc)
             parSusMod.qc = 1 - sqrt(1-par.qc);
             parSusMod.qs = 1 - sqrt(1-par.qc);
