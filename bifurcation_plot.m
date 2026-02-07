@@ -14,6 +14,9 @@ b = 0.2;
 % Range of R0 to plot
 R0 = 0.5:0.01:2.5;
 
+% Alpha
+Alpha = 0.25;
+
 % Number of values of tau/alpha being plotted
 nCases = length(a_vec);
 
@@ -35,7 +38,7 @@ for iCase = 1:nCases
     firstPoint = [1, 1+cumsum(nPoints(1:end-1))];
     [R0point, qpoint] = deal(zeros(1, nPoints(iCase)));
     for iPoint = 1:nPoints(iCase)
-        par = getPar(firstPoint(iCase) + iPoint-1 );
+        par = getPar(firstPoint(iCase) + iPoint-1, Alpha);
         R0point(iPoint) = par.Beta/par.Gamma;
         qpoint(iPoint) = par.qc;
     end
