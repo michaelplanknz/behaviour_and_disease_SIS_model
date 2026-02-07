@@ -5,8 +5,8 @@ close all
 figFolder = "figures/";
 
 % Number of sets of figures to run, specifying Alpha for each set
-nSets = 1;
-Alpha = 0.25;
+nSets = 4;
+Alpha = [0.25, 2.5, 0.025, 0.25];
 
 % Number of parameter combinations 
 nCases = 8;
@@ -64,13 +64,16 @@ for iSet = 1:nSets
     
         % Set up parameter structure for the susceptibility-modulated model
         parSusMod = par;
-        parSusMod.qc = 0;
-        parSusMod.qs = par.qc;
+        if iSet < 4
+            parSusMod.qc = 0;
+            parSusMod.qs = par.qc;
+        else
         % Split the behaviour effect between transission and susceptibility for
         % a total effect of the same size (par.qc)
-        %parSusMod.qc = 1 - sqrt(1-par.qc);
-        %parSusMod.qs = 1 - sqrt(1-par.qc);
-        
+            parSusMod.qc = 1 - sqrt(1-par.qc);
+            parSusMod.qs = 1 - sqrt(1-par.qc);
+        end
+            
     
         % Get phase plane results
         results = getPhasePlotOutputs(par, dx, dxquiv, dyquiv, pQuiv, tManifold, pert, opts);
@@ -98,7 +101,7 @@ for iSet = 1:nSets
         if iSet == 1
             fName = figFolder + "fig_cases" + iFig + ".png";
         else
-            fName = figFolder + "suppfig_set" + iSet-1 +"_cases" + iFig + ".png";
+            fName = figFolder + "suppfig_set" + string(iSet-1) +"_cases" + string(iFig) + ".png";
         end
         saveas(h, fName);
     end
