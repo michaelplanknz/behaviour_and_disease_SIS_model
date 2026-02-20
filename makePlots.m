@@ -11,6 +11,8 @@ ls = ["-", "--"];
 SSSmarksize = 22;
 % Index of trajcetory solution to place arrow at
 iArr = 30;
+% Length of orbit arrow (in phase plane coords)
+lArr = 0.02;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot phase plane
@@ -40,22 +42,26 @@ ha.ColorOrderIndex = 5;
 if ~isempty(results.Ystable1)
     ha.ColorOrderIndex = 6;
     plot(results.Ystable1(:, 1), results.Ystable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
-    ar = orbitArrow(flipud(results.Ystable1(:, 1)), flipud(results.Ystable1(:, 2)), "horiz", 0.75, colOrd(6, :));
+    % Put unstable manifold arrow at 75% of horizontal distance
+    ar = orbitArrow(flipud(results.Ystable1(:, 1)), flipud(results.Ystable1(:, 2)), "horiz", 0.75, lArr, colOrd(6, :));
 end
 if ~isempty(results.Ystable2)
     ha.ColorOrderIndex = 6;
     plot(results.Ystable2(:, 1), results.Ystable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
-    ar = orbitArrow(flipud(results.Ystable2(:, 1)), flipud(results.Ystable2(:, 2)), "horiz", 0.5, colOrd(6, :));
+    % Put unstable manifold arrow at 75% of horizontal distance
+    ar = orbitArrow(flipud(results.Ystable2(:, 1)), flipud(results.Ystable2(:, 2)), "horiz", 0.5, lArr, colOrd(6, :));
 end
 if ~isempty(results.Yunstable1)
     ha.ColorOrderIndex = 7;
     plot(results.Yunstable1(:, 1), results.Yunstable1(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
-    ar = orbitArrow(results.Yunstable1(:, 1), results.Yunstable1(:, 2), "vert", 0.7, colOrd(7, :));
+    % Put unstable manifold arrow at 70% of vertical distance
+    ar = orbitArrow(results.Yunstable1(:, 1), results.Yunstable1(:, 2), "vert", 0.7, lArr, colOrd(7, :));
 end
 if ~isempty(results.Yunstable2)
     ha.ColorOrderIndex = 7;
     plot(results.Yunstable2(:, 1), results.Yunstable2(:, 2), '-', 'LineWidth', 2, 'HandleVisibility', 'off')
-    ar = orbitArrow(results.Yunstable2(:, 1), results.Yunstable2(:, 2), "vert", 0.7, colOrd(7, :));
+    % Put unstable manifold arrow at 70% of vertical distance
+    ar = orbitArrow(results.Yunstable2(:, 1), results.Yunstable2(:, 2), "vert", 0.7, lArr, colOrd(7, :));
 end
 
 
@@ -64,7 +70,8 @@ end
 nICs = length(trajTransMod);
 for iIC = 1:nICs
     plot(trajTransMod(iIC).S, trajTransMod(iIC).B, 'k-', 'LineWidth', 1, 'HandleVisibility', 'off');
-    ar = orbitArrow( trajTransMod(iIC).S, trajTransMod(iIC).B, "ind", iArr, [0 0 0]);
+    % Put orbit arrow at specified index on the series
+    ar = orbitArrow( trajTransMod(iIC).S, trajTransMod(iIC).B, "ind", iArr, lArr, [0 0 0]);
 end
 
 

@@ -17,7 +17,9 @@ S0 = 0.95;
 
 % Time span and perturbation size for finding stable/unstable manifolds
 tManifold = [0, 1e3];
-pert = 1e-4;
+pert = 1e-2;
+
+% Root-finding options for finding equilibria 
 opts = optimoptions('fsolve', 'FunctionTolerance', 1e-10, 'StepTolerance', 1e-10, 'Display' ,'off', 'Algorithm', 'levenberg-marquardt');
 
 % Spacing for nullcline plotting (dx) and vector field arrow length plotting (dxquiv and dyquiv)
@@ -85,6 +87,10 @@ for iSet = 1:nSets
         for iIC = 1:nICs
             trajTransMod(iIC) = solveODE(@(t, y)fullModelODEs(t, y, par), tSpan, IC(:, iIC));
             trajSusMod(iIC) = solveODE(@(t, y)fullModelODEs(t, y, parSusMod), tSpan, IC(:, iIC));
+        end
+
+        if iSet == 3 & iCase == 2
+            0;
         end
     
         h = figure(10*(iSet-1)+figNum(iCase));
