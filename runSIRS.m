@@ -9,8 +9,8 @@ figFolder = "figures/";
 % Parameter values
 par.Gamma = 1;        
 par.Alpha = 0.25;            
-par.Chi = 20 * par.Alpha;
-par.Tau = 5 * par.Alpha;
+par.Chi = 20;
+par.Tau = 5;
 par.Beta = 2 * par.Gamma; 
 par.qs = 0;
 par.qc = 0.7;

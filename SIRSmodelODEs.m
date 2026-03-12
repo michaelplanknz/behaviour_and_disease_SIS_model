@@ -13,7 +13,7 @@ I = IN+IB;
 RN = 1-B-SN-IN;
 RB = B-SB-IB;
 
-Omega = par.Tau*B^2 + par.Chi*I;
+Omega = par.Alpha * (par.Tau*B^2 + par.Chi*I);
 
 Lambda = par.Beta * (IN + (1-par.qc)*IB);
 
