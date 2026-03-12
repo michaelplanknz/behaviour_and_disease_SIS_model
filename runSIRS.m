@@ -39,18 +39,20 @@ B2 = Y2(:, 5);
 
 % Plot results
 h = figure(1);
-h.Position = [ 2052         688         842         327];
+h.Position = [ 50         50         842         327];
 tiledlayout(1, 2, "TileSpacing", "compact");
 nexttile(1);
-plot(t1, I1, t2, I2)
 hold on
+plot(t1, I1, 'LineWidth', 2)
+plot(t2, I2, 'LineWidth', 2)
 xlabel('time')
 ylabel('I(t)')
 legend('with behaviour', 'without behaviour')
 title('(a)')
 nexttile(2);
-plot(t1, B1, t2, B2)
 hold on
+plot(t1, B1, 'LineWidth', 2)
+plot(t2, B2, 'LineWidth', 2)
 xlabel('time')
 ylabel('B(t)')
 title('(b)')
