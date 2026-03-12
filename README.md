@@ -1,4 +1,4 @@
-# behaviour_and_disease_SIS_model
+# Behaviour and disease model with complex behavioural contagion 
 
 Matlab code for the article "How complex behavioural contagion can prevent infectious diseases from becoming endemic".
 
