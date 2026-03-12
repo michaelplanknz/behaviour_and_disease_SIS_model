@@ -14,6 +14,27 @@ b = 0.2;
 % Range of R0 to plot
 R0 = 0.5:0.01:2.5;
 
+% Example parameters for nullcline plots
+R0_ex = 2;
+qc_ex = [0 0.2 0.4 0.6];
+Alpha_ex = 0.25;
+
+% Time span and perturbation size for finding stable/unstable manifolds
+tManifold = [0, 1e3];
+pert = 1e-2;
+
+% Root-finding options for finding equilibria 
+opts = optimoptions('fsolve', 'FunctionTolerance', 1e-10, 'StepTolerance', 1e-10, 'Display' ,'off', 'Algorithm', 'levenberg-marquardt');
+
+% Spacing for nullcline plotting (dx) and vector field arrow length plotting (dxquiv and dyquiv)
+dx = 0.001;
+dxquiv = 0.05;
+dyquiv = 0.1;
+
+% Power for vector field arrow length plotting (1 for actual length, 0 for
+% all the same length)
+pQuiv = 0.5; 
+
 % Alpha
 Alpha = 0.25;
 
@@ -163,4 +184,72 @@ for iCase = 1:nCases
 end
 
 fName = figFolder + "bifurcation.png";
+saveas(h, fName);
+
+
+
+
+
+
+% Plot example nullclines for suppmentary
+h = figure(2);
+h.Position = [      680         578        1035         420];
+tiledlayout(1, nCases, "TileSpacing", "compact");
+greyCol =  0.8*[1 1 1];
+colOrd = colororder;
+
+for iCase = 1:nCases
+    a = a_vec(iCase);
+
+    par.Gamma = 1;        
+    par.Beta = R0_ex*par.Gamma;
+    par.Alpha = Alpha_ex;             
+    par.Tau = a*par.Alpha;
+    par.Chi = b*par.Alpha;
+    par.qc = qc_ex(1);
+    results = getPhasePlotOutputs(par, dx, dxquiv, dyquiv, pQuiv, tManifold, pert, opts);
+
+     nexttile;
+     hold on
+
+    % Plot B nullcline 
+    plot(results.Snull2, results.Bnull2, 'LineWidth', 2, 'Color', colOrd(5, :));
+
+    % Plot S nullcline
+    plot(results.Snull1, results.Bnull1, 'LineWidth', 2, 'Color', colOrd(4, :));
+
+    % Set up a vector of color dilution factors
+    colAlph = linspace(0, 0.8, length(qc_ex));
+    % Plot the S nullcline for increasing values of qc
+    for iq = 2:length(qc_ex)
+        par.qc = qc_ex(iq);
+        results = getPhasePlotOutputs(par, dx, dxquiv, dyquiv, pQuiv, tManifold, pert, opts);
+        plot(results.Snull1, results.Bnull1, 'LineWidth', 2, 'Color', (1-colAlph(iq))*colOrd(4, :) + colAlph(iq));
+    end
+
+    % Plot vertical branch of S nullcline
+    plot([1 1], [0 1], 'k-', 'LineWidth', 2)
+
+   
+    xlim([0, 1])
+    ylim([0, 1])
+    xlabel('S')
+    ylabel('B')  
+
+    % S nullcline arrow and label
+    h = annotation('arrow');
+    h.Parent = gca;
+    h.X = 1/R0_ex + [0, -0.1]; 
+    h.Y = 0.025* [1 1];
+    h.Color = [0 0 0];
+    text(0.2, 0.07, "increasing R_0");
+
+    if iCase == 2
+        legend([ "B nullcline", "S nullcline (q_c = " + string(qc_ex) + ")", "S nullcline (all q_c)"], 'Location', 'eastoutside')
+    end
+    title(lbls(iCase) + " \tau/\alpha = " + sprintf('%.1f', a))
+
+end
+
+fName = figFolder + "nullclines.png";
 saveas(h, fName);
