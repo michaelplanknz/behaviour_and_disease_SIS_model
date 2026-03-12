@@ -23,15 +23,15 @@ if par.qc > 0
     Bnull1 = 1/par.qc * (1 - 1./(R0*Snull1));
 else
     Bnull1 = 0:dx:1;
-    Snull1 = 1/R0*ones(size(Bnull1));;
+    Snull1 = 1/R0*ones(size(Bnull1));
 end
 
 % Get (B,S) coords for the B nullcline
 Bnull2 = 0:dx:1;
-Snull2 = 1 + (par.Tau*Bnull2.^2 - par.Alpha*Bnull2./(1-Bnull2))/par.Chi;
+Snull2 = 1 + (par.Tau*Bnull2.^2 - Bnull2./(1-Bnull2))/par.Chi;
 
 % Get coords for BDFE
-Bstar = 0.5 * (1 + [1, -1]*sqrt(1-4*par.Alpha/par.Tau));
+Bstar = 0.5 * (1 + [1, -1]*sqrt(1-4/par.Tau));
 
 % Find endemic equilibria
 % First get good initial conditions for root-solving by moving along

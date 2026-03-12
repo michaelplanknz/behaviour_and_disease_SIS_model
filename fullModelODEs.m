@@ -8,7 +8,7 @@ B = y(3);
 
 S = SN+SB;
 
-Omega = par.Tau*B^2 + par.Chi*(1-S);
+Omega = par.Alpha * ( par.Tau*B^2 + par.Chi*(1-S) );
 
 Lambda = par.Beta * (1-B-SN + (1-par.qc)*(B-SB));
 

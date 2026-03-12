@@ -62,7 +62,9 @@ for iSet = 1:nSets
     % Run and plot each parameter combination in turn
     for iCase = 1:nCases
         % Get parameter values for this case
-        par = getPar(iCase, Alpha(iSet));
+        par = getPar(iCase);
+        % Set specific value of alpha for this set
+        par.Alpha = Alpha(iSet);
     
         % Set up parameter structure for the susceptibility-modulated model
         parSusMod = par;
@@ -89,10 +91,7 @@ for iSet = 1:nSets
             trajSusMod(iIC) = solveODE(@(t, y)fullModelODEs(t, y, parSusMod), tSpan, IC(:, iIC));
         end
 
-        if iSet == 3 & iCase == 2
-            0;
-        end
-    
+  
         h = figure(10*(iSet-1)+figNum(iCase));
         iTile = tileNum(iCase);
         makePlots(iTile, results, trajTransMod, trajSusMod, par, desc(iCase))  

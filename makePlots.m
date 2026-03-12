@@ -139,7 +139,7 @@ xlabel('time')
 title(lbls(iTile))
 if iTile == 2
     % Add legend and figure title for first row of plots
-    sgtitle("\tau/\alpha = " + sprintf('%.1f', par.Tau/par.Alpha) + ", q = " +sprintf('%.1f', par.qc) );
+    sgtitle("\tau = " + sprintf('%.1f', par.Tau) + ", q = " +sprintf('%.1f', par.qc) );
     lgd = legend('I', 'B', 'Location', 'northeast');
 end
 

@@ -6,10 +6,10 @@ close all
 % Figure folder
 figFolder = "figures/";
 
-% Reparameterise as a = tau/alpha  (BDFEs exist when a > 4)
-%                   b = chi/alpha
-a_vec = [3.8, 5];              
-b = 0.2;
+% Define values of Tau and Chi
+% (BDFEs exist when Tau > 4)
+Tau_vec = [3.8, 5];              
+Chi = 0.2;
 
 % Range of R0 to plot
 R0 = 0.5:0.01:2.5;
@@ -17,7 +17,6 @@ R0 = 0.5:0.01:2.5;
 % Example parameters for nullcline plots
 R0_ex = 2;
 qc_ex = [0 0.2 0.4 0.6];
-Alpha_ex = 0.25;
 
 % Time span and perturbation size for finding stable/unstable manifolds
 tManifold = [0, 1e3];
@@ -35,11 +34,9 @@ dyquiv = 0.1;
 % all the same length)
 pQuiv = 0.5; 
 
-% Alpha
-Alpha = 0.25;
 
-% Number of values of tau/alpha being plotted
-nCases = length(a_vec);
+% Number of values of tau being plotted
+nCases = length(Tau_vec);
 
 % Number of parameter combinations to add as points for each case
 nPoints = [3, 5];
@@ -53,19 +50,20 @@ h.Position = [      680         578        1035         420];
 tiledlayout(1, nCases, "TileSpacing", "compact");
 
 for iCase = 1:nCases
-    a = a_vec(iCase);
+    Tau = Tau_vec(iCase);
 
     % Get (R0,q) parameter points to be plotted
     firstPoint = [1, 1+cumsum(nPoints(1:end-1))];
     [R0point, qpoint] = deal(zeros(1, nPoints(iCase)));
     for iPoint = 1:nPoints(iCase)
-        par = getPar(firstPoint(iCase) + iPoint-1, Alpha);
-        R0point(iPoint) = par.Beta/par.Gamma;
-        qpoint(iPoint) = par.qc;
+        parTmp = getPar(firstPoint(iCase) + iPoint-1);
+        R0point(iPoint) = parTmp.Beta/parTmp.Gamma;
+        qpoint(iPoint) = parTmp.qc;
     end
     
+    
     % BDFEs
-    Bstar = 0.5 * (1 + [1, -1]*sqrt(1-4/a));
+    Bstar = 0.5 * (1 + [1, -1]*sqrt(1-4/Tau));
     
     % Bifurcation values of q at each of the BDFEs (transcritical
     % bifurcations)
@@ -86,7 +84,7 @@ for iCase = 1:nCases
     x0 = [1.5, 0.1];
     for ii = 1:length(qv)
         % Solve the system of two equtions to find the R0 and B where the nullclines intersect tangentially
-        x = fsolve(@(x)myFn(x, qv(ii), a, b), x0);
+        x = fsolve(@(x)myFn(x, qv(ii), Tau, Chi), x0);
         RSNB2(ii) = x(1);
         BSNB2(ii) = x(2);
         % Calculate the corresponding value of S
@@ -95,8 +93,8 @@ for iCase = 1:nCases
         x0 = x;
     end
     
-    % Look for SNB1 if a < 4
-    if a < 4
+    % Look for SNB1 if Tau < 4
+    if Tau < 4
         RSNB1 = zeros(size(qv));
         BSNB1 = zeros(size(qv));
         SSNB1 = zeros(size(qv));
@@ -104,7 +102,7 @@ for iCase = 1:nCases
         x0 = [1, 0.5];
         for ii = 1:length(qv)
             % Solve the system of two equtions to find the R0 and B where the nullclines intersect tangentially
-            x = fsolve(@(x)myFn(x, qv(ii), a, b), x0);
+            x = fsolve(@(x)myFn(x, qv(ii), Tau, Chi), x0);
             RSNB1(ii) = x(1);
             BSNB1(ii) = x(2);
             % Calculate the corresponding value of S
@@ -127,8 +125,8 @@ for iCase = 1:nCases
     hold on
     % Plot the transcritical bifurcation of DFE and EE
     xline(1, 'k-', 'LineWidth', 2, 'DisplayName', 'TC0')
-    if a > 4
-        % If a > 4 plot the transcritical bifurcations of BDFE and EE (and an empty SNB1 curve for the legend) 
+    if Tau > 4
+        % If Tau > 4 plot the transcritical bifurcations of BDFE and EE (and an empty SNB1 curve for the legend) 
         plot(R0(ind), qminus(ind), 'color', cols(2, :), 'LineWidth', 2, 'DisplayName', 'TC1')
         plot(R0(ind), qplus(ind), 'color', cols(1, :), 'LineWidth', 2, 'DisplayName', 'TC2')
         plot(nan, nan, 'color', cols(3, :), 'LineWidth', 2, 'LineStyle', '--', 'DisplayName', 'SNB1')
@@ -179,7 +177,7 @@ for iCase = 1:nCases
 
 
     end
-    title(lbls(iCase) + " \tau/\alpha = " + sprintf('%.1f', a))
+    title(lbls(iCase) + " \tau = " + sprintf('%.1f', Tau))
 
 end
 
@@ -199,13 +197,11 @@ greyCol =  0.8*[1 1 1];
 colOrd = colororder;
 
 for iCase = 1:nCases
-    a = a_vec(iCase);
-
     par.Gamma = 1;        
     par.Beta = R0_ex*par.Gamma;
-    par.Alpha = Alpha_ex;             
-    par.Tau = a*par.Alpha;
-    par.Chi = b*par.Alpha;
+    par.Alpha = 0.25;             
+    par.Tau = Tau_vec(iCase);
+    par.Chi = Chi;
     par.qc = qc_ex(1);
     results = getPhasePlotOutputs(par, dx, dxquiv, dyquiv, pQuiv, tManifold, pert, opts);
 
@@ -247,7 +243,7 @@ for iCase = 1:nCases
     if iCase == 2
         legend([ "B nullcline", "S nullcline (q_c = " + string(qc_ex) + ")", "S nullcline (all q_c)"], 'Location', 'eastoutside')
     end
-    title(lbls(iCase) + " \tau/\alpha = " + sprintf('%.1f', a))
+    title(lbls(iCase) + " \tau = " + sprintf('%.1f', par.Tau))
 
 end
 
