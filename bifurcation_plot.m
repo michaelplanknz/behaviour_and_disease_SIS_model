@@ -127,8 +127,8 @@ for iCase = 1:nCases
     xline(1, 'k-', 'LineWidth', 2, 'DisplayName', 'TC0')
     if Tau > 4
         % If Tau > 4 plot the transcritical bifurcations of BDFE and EE (and an empty SNB1 curve for the legend) 
-        plot(R0(ind), qminus(ind), 'color', cols(2, :), 'LineWidth', 2, 'DisplayName', 'TC1')
-        plot(R0(ind), qplus(ind), 'color', cols(1, :), 'LineWidth', 2, 'DisplayName', 'TC2')
+        plot(R0(ind), qminus(ind), 'color', cols(2, :), 'LineWidth', 2, 'DisplayName', 'TC-')
+        plot(R0(ind), qplus(ind), 'color', cols(1, :), 'LineWidth', 2, 'DisplayName', 'TC+')
         plot(nan, nan, 'color', cols(3, :), 'LineWidth', 2, 'LineStyle', '--', 'DisplayName', 'SNB1')
         lgd = legend('Location', 'eastoutside');
     else
