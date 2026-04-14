@@ -1,6 +1,13 @@
 # Behaviour and disease model with complex behavioural contagion 
 
-Matlab code for the article "How complex behavioural contagion can prevent infectious diseases from becoming endemic".
+Matlab code for the article (How complex behavioural contagion can prevent infectious diseases from becoming endemic)[https://arxiv.org/abs/2604.10995].
+
+
+
+
+## Verison history
+
+* 14 April 2026 - (arXiv preprint)[https://arxiv.org/abs/2604.10995v1] - results generated using the version of this repo tagged `v1.0`.
 
 All analyses were run in MATALB R2022b.
 
