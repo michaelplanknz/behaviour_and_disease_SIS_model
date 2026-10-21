@@ -136,6 +136,7 @@ end
 yline(1-1/R0, 'k:');
 ylim([0 1])
 xlabel('time')
+ylabel('proportion of population')
 title(lbls(iTile))
 if iTile == 2
     % Add legend and figure title for first row of plots
@@ -161,6 +162,7 @@ end
 yline(1-1/R0, 'k:');
 ylim([0 1])
 xlabel('time')
+ylabel('proportion of population')
 title(lbls(iTile))
 
 % Add legend to time series plots for the first case in each figure

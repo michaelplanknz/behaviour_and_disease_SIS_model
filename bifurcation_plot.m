@@ -12,9 +12,9 @@ Tau_vec = [3.8, 5];
 Chi = 0.2;
 
 % Range of R0 to plot
-R0 = 0.5:0.01:2.5;
+R0 = 0.5:0.005:2.5;
 
-% Example parameters for nullcline plots
+% Example parameters for nullcline plots and prevalence vs R0 plots
 R0_ex = 2;
 qc_ex = [0 0.2 0.4 0.6];
 
@@ -142,10 +142,7 @@ for iCase = 1:nCases
     xlim([0, max(R0)])
     ylim([0 1])
     xlabel('R_0')
-    ylabel('q_c')
-
-
-
+    ylabel('behavioural effect (q_c)')
 
     % Add region labels
     if iCase == 1
@@ -249,3 +246,129 @@ end
 
 fName = figFolder + "nullclines.png";
 saveas(h, fName);
+
+
+
+
+% Solve for equilibria as a function of R0 for each value of tau and for an example value of qc 
+
+SMALL = 1e-12;
+
+casesToPlot = [1 4];
+nVals = length(R0);
+
+Istar = nan(4, nVals, nCases);
+Rplus = nan(nVals, nCases);
+R0TC_minus = nan(1, 2);
+R0TC_plus = nan(1, 2);
+for iCase = 1:nCases
+    par = getPar(casesToPlot(iCase));
+
+    if par.Tau >= 4
+        % Calculate stability of BDFE+
+        Bminus = 0.5 * (1 - sqrt(1-4/par.Tau));
+        Bplus = 0.5 * (1 + sqrt(1-4/par.Tau));
+        Rplus(:, iCase) = R0.*(1-par.qc*Bplus);
+        R0TC_minus(iCase) = 1/(1-par.qc*Bminus);
+        R0TC_plus(iCase) = 1/(1-par.qc*Bplus);
+    end
+    
+
+    bif1Flag = false;
+    bif2Flag = false;
+    for iVal = 1:nVals
+        coeffs = zeros(1, 5);
+        % coeffs(j) is the coefficient of the (5-j)^th power or B in the
+        % polynomial to be solved
+        coeffs(5) = par.Chi*(1-1/R0(iVal));
+        coeffs(4) = - ( 1 + par.Chi*(par.qc + 1 - 1/R0(iVal)) );
+        coeffs(3) = par.qc*(1+par.Chi) + par.Tau;
+        coeffs(2) = -par.Tau*(1+par.qc);
+        coeffs(1) = par.Tau*par.qc;
+        xr = roots(coeffs);
+        xr = xr(abs(imag(xr)) < SMALL);
+        Ir = 1 - 1./(R0(iVal).*(1-par.qc*xr));
+        nRealRoots = length(xr);
+        if nRealRoots == 4
+            bif1Flag = true;
+        end
+        if bif1Flag && nRealRoots == 2
+            bif2Flag = true;
+        end
+
+        if ~bif2Flag    
+            Istar(1:length(xr), iVal, iCase) =  sort(Ir, 'descend')';
+        else
+            % After second bifurcation, store roots in positions 3 and 4
+            % for continuous plotting of branches
+            Istar(3:(2+length(xr)), iVal, iCase) = sort(Ir, 'descend')';
+        end
+    end
+end
+
+Istar(Istar < 0) = nan;
+
+% Plot equilibria versus R0
+
+h = figure(3);
+h.Position = [      680         578        1035         420];
+tiledlayout(1, nCases, "TileSpacing", "compact");
+greyCol =  0.8*[1 1 1];
+colOrd = colororder;
+zz = zeros(size(R0));
+for iCase = 1:nCases
+    nexttile;
+    hold on
+    % Plot dummy data for legend
+    plot(nan, nan, "Color", colOrd(1, :), 'LineWidth', 2)
+    plot(nan, nan, "Color", colOrd(2, :), 'LineWidth', 2)
+    plot(nan, nan, "Color", colOrd(3, :), 'LineWidth', 2)
+    plot(nan, nan, "Color", colOrd(4, :), 'LineWidth', 2)
+    plot(nan, nan, 'Color', [0 0 0])
+    plot(nan, nan, "Color", colOrd(3, :), 'Marker', 'o', 'MarkerFaceColor', colOrd(3, :), 'LineStyle', 'none')
+    plot(nan, nan, "Color", colOrd(2, :), 'Marker', 'o', 'MarkerFaceColor', colOrd(2, :), 'LineStyle', 'none')
+    plot(nan, nan, "Color", colOrd(3, :), 'Marker', 'square', 'MarkerFaceColor', colOrd(3, :), 'LineStyle', 'none')
+    plot(nan, nan, "Color", colOrd(4, :), 'Marker', 'square', 'MarkerFaceColor', colOrd(4, :), 'LineStyle', 'none')
+
+
+    % Plot equilibrium prevalence on each branch
+    plot(R0(Rplus(:, iCase) <= 1), zz(Rplus(:, iCase) <= 1), "Color", colOrd(1, :), 'LineWidth', 2 )
+    plot(R0(Rplus(:, iCase) >= 1), zz(Rplus(:, iCase) >= 1), "Color", colOrd(1, :), 'LineWidth', 2, 'LineStyle', '--' )
+
+    plot(R0, Istar(1, :, iCase), 'LineWidth', 2, 'Color', colOrd(2, :))
+    plot(R0, Istar(2, :, iCase), 'LineWidth', 2, 'Color', colOrd(3, :), 'LineStyle', '--' )
+    plot(R0, Istar(3, :, iCase), 'LineWidth', 2, 'Color', colOrd(4, :))
+
+
+
+    % Plot no behaviour equilibrium for comparison
+    plot(R0, 1-1./R0, 'Color', [0 0 0])
+
+
+    % Plot bifurcation points
+  
+    iSNB1 = find(~isnan(Istar(2, :, iCase)), 1, 'first');
+    iSNB2 = find(~isnan(Istar(2, :, iCase)), 1, 'last');
+    if Tau_vec(iCase) < 4   
+        plot(R0(iSNB1), Istar(2, iSNB1, iCase), 'Marker', 'o', 'color', colOrd(3, :), 'MarkerFaceColor', colOrd(3, :), 'LineStyle', 'none')
+    end
+    plot(R0(iSNB2), Istar(2, iSNB2, iCase), 'Marker', 'o', 'color', colOrd(2, :), 'MarkerFaceColor', colOrd(2, :), 'LineStyle', 'none')
+
+    plot(R0TC_minus(iCase), 0, 'Marker', 'square', 'color', colOrd(3, :), 'MarkerFaceColor', colOrd(3, :), 'LineStyle', 'none')
+    plot(R0TC_plus(iCase), 0, 'Marker', 'square', 'color', colOrd(4, :), 'MarkerFaceColor', colOrd(4, :), 'LineStyle', 'none')
+
+    xlim([1 inf])
+    ylim([0, 0.5])
+    xlabel('R_0')
+    ylabel('equilibrium prevalence (I*)')  
+
+    title(lbls(iCase) + " \tau = " + sprintf('%.1f', Tau_vec(iCase)))
+
+end
+
+legend('BDFE_+', 'EE low B', 'EE med B', 'EE high B', 'No behaviour', 'SNB1', 'SNB2', 'TC-', 'TC+', 'Location', 'southeast')
+
+fName = figFolder + "prevalence_vs_R0.png";
+saveas(h, fName);
+
+

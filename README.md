@@ -14,9 +14,10 @@ All analyses were run in MATALB R2022b.
 
 ## How to use this repo
 
-* Run bifurcation_plot.m to create the two-parameter bifurcation diagrams for the behaviour-dependent transmission version of the model (Figure 1) as well as the nullcline plots in Supplementary Material.
+* Run bifurcation_plot.m to create the two-parameter bifurcation diagrams for the behaviour-dependent transmission version of the model (Figure 1) as well as Supplementary Figures S2 and S3.
 * Run main.m to create the phase plane and time series plots for the transmission-modulated and behaviour-modulated versions of the model (Figures 2-4).
 * Run runSIRS.m to create the SIRS model plot (Figure 5).
+* Run check_3D_model.m to create the plots of equilibrium infection prevalence against initial conditions (Supplementary Figure S4)
 
 The parameter values for the 10 cases are defined in getPar().
 
