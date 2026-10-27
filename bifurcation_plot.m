@@ -43,7 +43,7 @@ nPoints = [3, 5];
 
 
 cols = hsv(5);
-lbls = ["(a)", "(b)"];
+lbls = ["(a)", "(b)", "(c)", "(d)"];
 
 h = figure(1);
 h.Position = [      680         578        1035         420];
@@ -254,7 +254,8 @@ saveas(h, fName);
 
 SMALL = 1e-12;
 
-casesToPlot = [1 4];
+casesToPlot = [1, 6, 4];
+nCases = length(casesToPlot);
 nVals = length(R0);
 
 Istar = nan(4, nVals, nCases);
@@ -311,13 +312,14 @@ Istar(Istar < 0) = nan;
 % Plot equilibria versus R0
 
 h = figure(3);
-h.Position = [      680         578        1035         420];
-tiledlayout(1, nCases, "TileSpacing", "compact");
+h.Position = [   746   442   776   614];
+tiledlayout(2, 2, "TileSpacing", "compact");
 greyCol =  0.8*[1 1 1];
 colOrd = colororder;
 zz = zeros(size(R0));
 for iCase = 1:nCases
     nexttile;
+    par = getPar(casesToPlot(iCase));
     hold on
     % Plot dummy data for legend
     plot(nan, nan, "Color", colOrd(1, :), 'LineWidth', 2)
@@ -349,7 +351,7 @@ for iCase = 1:nCases
   
     iSNB1 = find(~isnan(Istar(2, :, iCase)), 1, 'first');
     iSNB2 = find(~isnan(Istar(2, :, iCase)), 1, 'last');
-    if Tau_vec(iCase) < 4   
+    if par.Tau < 4   
         plot(R0(iSNB1), Istar(2, iSNB1, iCase), 'Marker', 'o', 'color', colOrd(3, :), 'MarkerFaceColor', colOrd(3, :), 'LineStyle', 'none')
     end
     plot(R0(iSNB2), Istar(2, iSNB2, iCase), 'Marker', 'o', 'color', colOrd(2, :), 'MarkerFaceColor', colOrd(2, :), 'LineStyle', 'none')
@@ -362,11 +364,12 @@ for iCase = 1:nCases
     xlabel('R_0')
     ylabel('equilibrium prevalence (I*)')  
 
-    title(lbls(iCase) + " \tau = " + sprintf('%.1f', Tau_vec(iCase)))
+    title(lbls(iCase) + " \tau = " + sprintf('%.1f', par.Tau) + ", q_c = " + sprintf('%.1f', par.qc))
 
 end
 
-legend('BDFE_+', 'EE low B', 'EE med B', 'EE high B', 'No behaviour', 'SNB1', 'SNB2', 'TC-', 'TC+', 'Location', 'southeast')
+lgd = legend('BDFE_+', 'EE low B', 'EE med B', 'EE high B', 'No behaviour', 'SNB1', 'SNB2', 'TC-', 'TC+');
+lgd.Layout.Tile = 4; 
 
 fName = figFolder + "prevalence_vs_R0.png";
 saveas(h, fName);
