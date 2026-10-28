@@ -5,7 +5,8 @@ Matlab code for the article [How complex behavioural contagion can prevent infec
 
 ## Verison history
 
-* 14 April 2026 - [arXiv preprint](https://arxiv.org/abs/2604.10995v1) - results generated using the version of this repo tagged `v1.0`.
+* 14 April 2026 - [arXiv preprint version 1](https://arxiv.org/abs/2604.10995v1) - results generated using the version of this repo tagged `v1.0`.
+* 29 October 2026 - [arXiv preprint version 2](https://arxiv.org/abs/2604.10995v2) - results generated using the version of this repo tagged `v1.1`.
 
 All analyses were run in MATALB R2022b.
 
